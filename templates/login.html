@@ -37,12 +37,15 @@
         </form>
         
         <p style="text-align: center; margin-top: 20px; color: var(--text-muted);">
-            ¿No tienes cuenta? <a href="{{ url_for('register') }}">Regístrate aquí</a>            
+            ¿No tienes cuenta? <a href="{{ url_for('register') }}">Regístrate aquí</a>
         </p>
+
+        <hr style="border-color: var(--border-color); margin-top: 30px;">
+
+        <div style="text-align: center; margin-top: 20px; font-size: 0.8em; color: var(--text-muted);">
+            <a href="{{ url_for('privacy') }}" style="color: var(--text-muted);">Política de Privacidad</a> | 
+            <a href="{{ url_for('terms') }}" style="color: var(--text-muted);">Términos y Condiciones</a>
+        </div>
     </div>
 </body>
 </html>
-<div style="text-align: center; margin-top: 30px; font-size: 0.8em;">
-    <a href="{{ url_for('privacy') }}">Privacidad</a> | 
-    <a href="{{ url_for('terms') }}">Términos</a>
-</div>
