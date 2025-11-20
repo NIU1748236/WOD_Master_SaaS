@@ -1,0 +1,247 @@
+/* --- SISTEMA DE TEMAS --- */
+:root {
+    --bg-body: #121212;
+    --bg-container: #1e1e1e;
+    --bg-card: #2c2c2c;
+    --text-main: #e0e0e0;
+    --text-muted: #aaaaaa;
+    --border-color: #333333;
+    --primary-color: #00e676;
+    --input-bg: #21252b;
+    
+    --ai-box-bg: #151515; 
+    --ai-box-border: #333;
+    --ai-text-color: #ffffff;
+}
+
+.light-mode {
+    --bg-body: #f0f2f5;
+    --bg-container: #ffffff;
+    --bg-card: #f8f9fa;
+    --text-main: #333333;
+    --text-muted: #666666;
+    --border-color: #dddddd;
+    --primary-color: #00c853;
+    --input-bg: #ffffff;
+    
+    --ai-box-bg: #f1f3f4;
+    --ai-box-border: #ccc;
+    --ai-text-color: #000000;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    margin: 0;
+    padding: 20px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: var(--bg-container);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+h1 { color: var(--primary-color); margin: 0; }
+a { color: #2979ff; text-decoration: none; }
+
+.theme-toggle {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1.2em;
+}
+
+/* --- ETIQUETAS DE CATEGORÍA (TAGS) --- */
+.tag {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-left: 10px;
+    color: white;
+    vertical-align: middle;
+}
+
+/* Colores por Categoría */
+.tag-strength { background-color: #e53935; } /* Rojo */
+.tag-cardio { background-color: #1e88e5; }   /* Azul */
+.tag-metcon { background-color: #8e24aa; }   /* Morado */
+.tag-gymnastics { background-color: #43a047; } /* Verde */
+.tag-benchmark { background-color: #fdd835; color: black; } /* Amarillo */
+.tag-hypertrophy { background-color: #ff9800; } /* Naranja */
+.tag-general { background-color: #757575; } /* Gris */
+
+/* --- TARJETAS --- */
+.wod-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.wod-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.wod-header h2 { margin: 0; color: var(--text-main); display: flex; align-items: center; }
+.wod-date { font-size: 0.9em; color: var(--text-muted); }
+
+.wod-tone { 
+    background-color: var(--bg-body); 
+    padding: 4px 8px; 
+    border-radius: 4px; 
+    font-size: 0.8em; 
+    color: #2979ff;
+    border: 1px solid var(--border-color);
+}
+
+/* --- CAJAS DE TEXTO IA --- */
+.ai-section {
+    margin-top: 20px;
+    background-color: var(--bg-body);
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #2979ff;
+}
+
+.result-group { margin-bottom: 30px; }
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.result-header label {
+    margin: 0; 
+    color: #2979ff; 
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+textarea {
+    width: 100%;
+    background-color: var(--input-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 15px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    resize: vertical;
+    min-height: 100px; 
+    line-height: 1.6;
+    box-sizing: border-box;
+    font-size: 15px;
+}
+textarea:focus { border-color: #2979ff; outline: none; }
+
+/* OVERRIDE IA */
+.ai-section textarea {
+    background-color: var(--ai-box-bg); 
+    color: var(--ai-text-color);
+    border: 1px solid var(--ai-box-border);
+    min-height: 200px;
+}
+
+/* BOTONES Y FORMULARIOS */
+
+/* 1. Botones PEQUEÑOS (Solo para copiar) */
+.copy-btn {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 6px 15px; /* Tamaño pequeño */
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+.copy-btn:hover { background-color: var(--border-color); }
+
+
+/* 2. Botones GRANDES (Acciones principales: Editar, Borrar, Descargar) */
+.button, .download-btn { /* AÑADIDO AQUÍ .download-btn */
+    display: inline-block;
+    padding: 10px 20px; /* Tamaño grande para todos */
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+    text-decoration: none; /* Para que los enlaces parezcan botones */
+}
+
+/* Colores Específicos */
+.primary { background-color: var(--primary-color); color: #000; }
+.secondary { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); }
+.danger { background-color: #cf6679; color: #fff; }
+
+/* Estilo específico MORADO para descargar */
+.download-btn { 
+    background-color: #7e57c2; 
+    color: white; 
+    border: none; /* Quitamos el borde gris si lo tenía */
+}
+.download-btn:hover { background-color: #673ab7; }
+
+
+/* Botón Gigante de la IA */
+.ai-button { background-color: #2979ff; color: white; width: 100%; margin-top: 10px; font-size: 16px; padding: 12px; }
+
+/* Estilo especial para el botón descargar (púrpura) */
+.download-btn { border-color: #8e24aa; color: #ce93d8; }
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+}
+.primary { background-color: var(--primary-color); color: #000; }
+.secondary { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); }
+.danger { background-color: #cf6679; color: #fff; }
+.ai-button { background-color: #2979ff; color: white; width: 100%; margin-top: 10px; font-size: 16px; padding: 12px; }
+
+label { display: block; margin-top: 15px; color: var(--text-muted); }
+input, select {
+    width: 100%;
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 5px;
+}
+
+.loading-spinner { display: none; text-align: center; margin-top: 15px; color: #2979ff; font-weight: bold; }
+.spinner { border: 4px solid rgba(100, 100, 100, 0.1); width: 24px; height: 24px; border-radius: 50%; border-left-color: #2979ff; animation: spin 1s ease infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

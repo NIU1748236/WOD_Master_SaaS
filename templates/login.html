@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - WOD Master SaaS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5">
+</head>
+<body>
+    <div class="container" style="max-width: 400px; margin-top: 50px;">
+        <h1 style="text-align: center;">🔐 Acceso Gimnasio</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 10px; margin-bottom: 20px; border-radius: 5px; 
+                         background: {{ '#00e676' if category == 'success' else '#cf6679' }}; 
+                         color: black; text-align: center; font-weight: bold;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label>Email:</label>
+            <input type="email" name="email" placeholder="admin@tugimnasio.com" required>
+            
+            <label>Contraseña:</label>
+            <input type="password" name="password" required>
+            
+            <div style="text-align: right; margin-top: 8px; margin-bottom: 20px;">
+                <a href="{{ url_for('reset_request') }}" style="font-size: 0.9em; color: #2979ff;">¿Olvidaste tu contraseña?</a>
+            </div>
+            
+            <button type="submit" class="button primary" style="width: 100%;">Entrar</button>
+        </form>
+        
+        <p style="text-align: center; margin-top: 20px; color: var(--text-muted);">
+            ¿No tienes cuenta? <a href="{{ url_for('register') }}">Regístrate aquí</a>            
+        </p>
+    </div>
+</body>
+</html>
+<div style="text-align: center; margin-top: 30px; font-size: 0.8em;">
+    <a href="{{ url_for('privacy') }}">Privacidad</a> | 
+    <a href="{{ url_for('terms') }}">Términos</a>
+</div>
