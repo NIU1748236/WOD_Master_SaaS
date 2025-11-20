@@ -1,17 +1,19 @@
 import os
 import json
 import time
+import io
 from datetime import datetime
 from dotenv import load_dotenv 
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort, send_file
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate  # <--- NUEVO
+from flask_migrate import Migrate
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import google.generativeai as genai
 import stripe
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
+from fpdf import FPDF # Librería para generar PDFs
 
 # ==========================================
 # 1. CARGA DE SECRETOS
@@ -47,7 +49,7 @@ except Exception as e:
 
 # INICIALIZACIÓN DB, MIGRATE Y LOGIN
 db = SQLAlchemy(app)
-migrate = Migrate(app, db) # <--- INICIALIZACIÓN MIGRATE
+migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -65,7 +67,7 @@ class User(UserMixin, db.Model):
     is_premium = db.Column(db.Boolean, default=False) 
     stripe_customer_id = db.Column(db.String(100), nullable=True) 
     
-    # NUEVO CAMPO: ESTADÍSTICAS DE USO
+    # CONTADOR DE USO (Métricas)
     ai_uses_count = db.Column(db.Integer, default=0)
 
     wods = db.relationship('Wod', backref='owner', lazy=True)
@@ -132,7 +134,7 @@ def generar_contenido_ia(wod_data):
     return None
 
 # ==========================================
-# 4. RUTAS APP 
+# 4. RUTAS APP PRINCIPALES
 # ==========================================
 @app.route('/')
 @login_required
@@ -170,20 +172,40 @@ def login():
         flash('Credenciales incorrectas', 'error')
     return render_template('login.html')
 
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
-
-# --- RUTAS LEGALES ---
+# --- RUTAS LEGALES (NECESARIAS PARA STRIPE) ---
 @app.route('/privacy')
 def privacy(): return render_template('privacy.html')
 
 @app.route('/terms')
 def terms(): return render_template('terms.html')
 
-# --- RUTAS PASSWORD ---
+# --- RUTAS DE GESTIÓN DE CUENTA Y LOGOUT ---
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+# NUEVA: BORRAR CUENTA
+@app.route('/settings/delete_account', methods=['POST'])
+@login_required
+def delete_account():
+    user = current_user
+    try:
+        # 1. Borrar WODs asociados
+        Wod.query.filter_by(user_id=user.id).delete()
+        # 2. Borrar Usuario
+        db.session.delete(user)
+        db.session.commit()
+        logout_user()
+        flash('Tu cuenta ha sido eliminada permanentemente.', 'success')
+        return redirect(url_for('login'))
+    except Exception as e:
+        db.session.rollback()
+        flash('Error al eliminar cuenta.', 'error')
+        return redirect(url_for('index'))
+
+# --- RUTAS RECUPERACIÓN CONTRASEÑA ---
 @app.route('/reset_password_request', methods=['GET', 'POST'])
 def reset_request():
     if current_user.is_authenticated: return redirect(url_for('index'))
@@ -217,7 +239,9 @@ def reset_token(token):
         return redirect(url_for('login'))
     return render_template('reset_token.html')
 
-# --- CRUD WODS ---
+# ==========================================
+# 5. GESTIÓN DE WODS Y PDF
+# ==========================================
 @app.route('/add', methods=['GET', 'POST'])
 @login_required
 def add_wod():
@@ -255,6 +279,7 @@ def edit_wod(wod_id):
         wod.tone = request.form['tone']
         wod.target_audience = request.form['target_audience']
         db.session.commit()
+        flash('Entrenamiento editado correctamente.', 'success')
         return redirect(url_for('index'))
     return render_template('edit_wod.html', wod=wod)
 
@@ -266,8 +291,59 @@ def delete_wod(wod_id):
     db.session.commit()
     return redirect(url_for('index'))
 
+# NUEVA: EXPORTAR A PDF
+@app.route('/export_pdf/<int:wod_id>')
+@login_required
+def export_pdf(wod_id):
+    wod = Wod.query.filter_by(id=wod_id, user_id=current_user.id).first_or_404()
+    
+    # Configuración del PDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    
+    # Título
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, f"{wod.title}", ln=True, align='C')
+    pdf.set_font("Arial", "I", 10)
+    pdf.cell(0, 10, f"{wod.date.strftime('%d-%m-%Y')} | {wod.category}", ln=True, align='C')
+    pdf.ln(10)
+    
+    # Función helper para escribir bloques
+    def write_section(title, content):
+        if content:
+            pdf.set_font("Arial", "B", 12)
+            pdf.set_fill_color(200, 220, 255)
+            pdf.cell(0, 10, title, ln=True, fill=True)
+            pdf.ln(2)
+            pdf.set_font("Arial", size=11)
+            # Reemplazar caracteres problemáticos básicos para PDF latin-1
+            safe_content = content.encode('latin-1', 'replace').decode('latin-1')
+            pdf.multi_cell(0, 7, safe_content)
+            pdf.ln(5)
+
+    write_section("Estructura del WOD", wod.structure)
+    write_section("Objetivo", wod.objective)
+    write_section("Calentamiento (Warm-up)", wod.ai_warmup)
+    write_section("Estrategia", wod.ai_strategy)
+    write_section("Notas", wod.notes)
+    
+    # Guardar en memoria (buffer)
+    buffer = io.BytesIO()
+    # Output devuelve string en latin-1, lo convertimos a bytes
+    pdf_output = pdf.output(dest='S').encode('latin-1')
+    buffer.write(pdf_output)
+    buffer.seek(0)
+    
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=f"WOD_{wod.date}_{wod.title}.pdf",
+        mimetype='application/pdf'
+    )
+
 # ==========================================
-# 5. IA + ESTADÍSTICAS
+# 6. IA + CRÉDITOS + MÉTRICAS
 # ==========================================
 @app.route('/generate_ai/<int:wod_id>', methods=['POST'])
 @login_required
@@ -293,11 +369,11 @@ def generate_ai_content(wod_id):
         wod.ai_warmup = safe(contenido.get('warmup'))
         wod.ai_strategy = safe(contenido.get('estrategia_escalados'))
         
-        # ACTUALIZACIÓN DE CRÉDITOS Y ESTADÍSTICAS
+        # Gestión de Créditos
         if not current_user.is_premium:
             current_user.credits -= 1
         
-        # NUEVO: CONTAR USO DE IA
+        # CONTADOR DE USO (MÉTRICAS)
         if current_user.ai_uses_count is None: current_user.ai_uses_count = 0
         current_user.ai_uses_count += 1
         
@@ -309,39 +385,33 @@ def generate_ai_content(wod_id):
     return redirect(url_for('index'))
 
 # ==========================================
-# 6. FACTURACIÓN Y ADMIN
+# 7. FACTURACIÓN Y ADMIN
 # ==========================================
 @app.route('/pricing')
 @login_required
 def pricing():
     return render_template('pricing.html', key=STRIPE_PUBLISHABLE_KEY)
 
-# NUEVA RUTA: PORTAL DE CLIENTE STRIPE
 @app.route('/billing')
 @login_required
 def billing():
     if not current_user.stripe_customer_id:
         flash('No tienes historial de facturación aún.', 'error')
         return redirect(url_for('index'))
-        
     session = stripe.billing_portal.Session.create(
         customer=current_user.stripe_customer_id,
         return_url=url_for('index', _external=True)
     )
     return redirect(session.url)
 
-# NUEVA RUTA: DASHBOARD ADMIN (SOLO PARA TI)
 @app.route('/super_admin')
 @login_required
 def super_admin():
-    # CAMBIA ESTO POR TU EMAIL REAL PARA PROTEGER LA RUTA
     if current_user.email != "pau.garcia.ru@gmail.com": 
-        abort(403) # Prohibido para otros
-        
+        abort(403)
     users = User.query.all()
     total_users = len(users)
     total_premium = sum(1 for u in users if u.is_premium)
-    
     return render_template('admin_dashboard.html', users=users, total=total_users, premium=total_premium)
 
 @app.route('/create-checkout-session', methods=['POST'])
@@ -350,7 +420,7 @@ def create_checkout_session():
     try:
         checkout_session = stripe.checkout.Session.create(
             client_reference_id=current_user.id,
-            customer=current_user.stripe_customer_id if current_user.stripe_customer_id else None, # Reusar cliente si existe
+            customer=current_user.stripe_customer_id if current_user.stripe_customer_id else None,
             line_items=[{'price': STRIPE_PRICE_ID, 'quantity': 1}],
             mode='subscription',
             success_url=url_for('success', _external=True) + '?session_id={CHECKOUT_SESSION_ID}',
@@ -407,8 +477,6 @@ def stripe_webhook():
     return jsonify(success=True)
 
 if __name__ == '__main__':
-    # NOTA: db.create_all() ya no se recomienda al usar Flask-Migrate, 
-    # pero lo dejamos por compatibilidad con Render si no ejecutas migraciones.
-    with app.app_context():
-        db.create_all()
+    # En desarrollo local, Render usa gunicorn y no entra aquí.
+    # Puedes usar flask db upgrade para crear tablas.
     app.run(debug=True, port=5000)

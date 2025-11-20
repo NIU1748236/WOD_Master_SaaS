@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOD Master PRO</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=8">
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="[https://html2canvas.hertzen.com/dist/html2canvas.min.js](https://html2canvas.hertzen.com/dist/html2canvas.min.js)"></script>
 </head>
 <body>
     <div class="container">
@@ -25,7 +25,7 @@
                         {% endif %}
                     {% endif %}
                     
-                    {% if user.is_premium  %}
+                    {% if user.stripe_customer_id %}
                         <a href="{{ url_for('billing') }}" class="button secondary" 
                            style="padding: 5px 12px; font-size: 0.8em; margin-left: 10px; border-radius: 20px; background: #333; border-color: #555; text-decoration: none;">
                            💳 Facturación
@@ -88,9 +88,9 @@
             
             <div id="story-capture-{{wod.id}}" style="
                 position: fixed; top: 0; left: 0; 
-                width: 540px; height: 960px; /* Proporción Story */
+                width: 540px; height: 960px; 
                 background: linear-gradient(145deg, #121212, #2d2d2d); 
-                display: none; /* OCULTO POR DEFECTO */
+                display: none; 
                 flex-direction: column; 
                 justify-content: center; 
                 align-items: center; 
@@ -105,15 +105,12 @@
                 <div style="font-size: 24px; text-transform: uppercase; letter-spacing: 2px; color: #aaaaaa; margin-bottom: 20px;">
                     {{ user.gym_name }}
                 </div>
-
                 <h1 style="font-size: 56px; color: var(--primary-color); margin: 0 0 30px 0; line-height: 1.1; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
                     {{ wod.title }}
                 </h1>
-
                 <div style="background: #ffffff22; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 18px; margin-bottom: 40px;">
                     {{ wod.date.strftime('%d/%m') }} • {{ wod.category|upper }}
                 </div>
-
                 <div style="
                     background: rgba(0,0,0,0.3); 
                     padding: 30px; 
@@ -127,11 +124,11 @@
                 ">
 {{ wod.structure }}
                 </div>
-
                 <div style="margin-top: 50px; font-size: 18px; color: #888;">
                     🔥 WORKOUT OF THE DAY 🔥
                 </div>
             </div>
+
             <div class="wod-header">
                 <h2>{{ wod.title }} <span class="tag tag-{{ wod.category|lower }}">{{ wod.category }}</span></h2>
                 <span class="wod-date">{{ wod.date.strftime('%d/%m/%Y') }}</span>
@@ -150,6 +147,10 @@
                     <button type="submit" class="button danger" onclick="return confirm('¿Seguro?')">🗑️</button>
                 </form>
                 <button class="download-btn" onclick="descargarImagen('{{wod.id}}', '{{wod.title}}')">📸 Story Pro</button>
+                
+                <a href="{{ url_for('export_pdf', wod_id=wod.id) }}" class="button" style="background: #FF5722; color: white; text-decoration: none; border: none;">
+                    📄 PDF
+                </a>
             </div>
 
             <form action="{{ url_for('generate_ai_content', wod_id=wod.id) }}" method="POST" onsubmit="return confirmarGeneracion(this, '{{ (wod.ai_instagram_post or "") | length }}')">
@@ -222,6 +223,16 @@
                 <h3>📭 Crea tu primer WOD para empezar</h3>
             </div>
         {% endfor %}
+
+        <hr style="margin: 50px 0; border-color: #333;">
+        <div style="text-align: center; padding-bottom: 50px;">
+            <p style="color: #666; font-size: 0.8em;">Zona de Peligro</p>
+            <form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('⚠️ ¿ESTÁS SEGURO? Se borrarán todos tus datos y no se pueden recuperar.');">
+                <button type="submit" class="button danger" style="background: transparent; border: 1px solid #cf6679; color: #cf6679;">
+                    💀 Eliminar mi Cuenta
+                </button>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -248,25 +259,18 @@
             alert("Copiado!");
         }
 
-        // --- FUNCIÓN MEJORADA PARA STORY PROFESIONAL ---
         function descargarImagen(id, t) {
             const captureDiv = document.getElementById('story-capture-'+id);
-
-            // 1. Hacer visible el diseño oculto (overlay)
             captureDiv.style.display = 'flex'; 
-
             html2canvas(captureDiv, {
-                scale: 2, // Calidad alta
-                backgroundColor: null, // Respetar el degradado CSS
+                scale: 2, 
+                backgroundColor: null, 
                 useCORS: true
             }).then(canvas => {
-                // 2. Crear enlace de descarga
                 let l = document.createElement('a'); 
                 l.download = 'WOD-Story-' + t.replace(/\s/g, '_') + '.png'; 
                 l.href = canvas.toDataURL(); 
                 l.click();
-
-                // 3. Ocultar de nuevo el diseño
                 captureDiv.style.display = 'none';
             });
         }
