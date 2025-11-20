@@ -4,23 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOD Master PRO</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=9">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=11">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        /* NUEVO: Estilo para el botón de cerrar la Story */
-        .story-close-btn {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 40px;
-            color: white;
-            cursor: pointer;
-            z-index: 10000;
+        /* Clase para deshabilitar visualmente el botón durante la carga */
+        .btn-loading {
             opacity: 0.7;
-            transition: opacity 0.3s;
-        }
-        .story-close-btn:hover {
-            opacity: 1;
+            cursor: not-allowed !important;
         }
     </style>
 </head>
@@ -104,23 +94,22 @@
         <div class="wod-card" id="card-{{wod.id}}">
             
             <div id="story-capture-{{wod.id}}" style="
-                position: fixed; top: 0; left: 0; 
-                width: 100%; height: 100%; /* Ocupar toda la pantalla */
+                position: fixed; top: 0; left: -9999px; /* FUERA DE PANTALLA */
+                width: 540px; height: 960px; 
                 background: linear-gradient(145deg, #121212, #2d2d2d); 
                 display: none; 
                 flex-direction: column; 
                 justify-content: center; 
                 align-items: center; 
-                padding: 20px;
+                padding: 40px;
                 box-sizing: border-box; 
                 text-align: center;
+                border: 8px solid var(--primary-color);
                 z-index: 9999;
                 font-family: 'Segoe UI', sans-serif;
                 color: white;
             ">
-                <div class="story-close-btn" onclick="cerrarStory('{{wod.id}}')">×</div>
-
-                <div style="width: 540px; max-width: 100%; border: 8px solid var(--primary-color); padding: 40px; border-radius: 4px;">
+                <div style="width: 100%;">
                      <div style="font-size: 24px; text-transform: uppercase; letter-spacing: 2px; color: #aaaaaa; margin-bottom: 20px;">
                         {{ user.gym_name }}
                     </div>
@@ -167,7 +156,7 @@
                 <form action="{{ url_for('delete_wod', wod_id=wod.id) }}" method="POST" style="display:inline;">
                     <button type="submit" class="button danger" onclick="return confirm('¿Seguro?')">🗑️</button>
                 </form>
-                <button class="download-btn" onclick="descargarImagen('{{wod.id}}', '{{wod.title}}')">📸 Story Pro</button>
+                <button class="download-btn" onclick="descargarImagen(this, '{{wod.id}}', '{{wod.title}}')">📸 Story Pro</button>
                 
                 <a href="{{ url_for('export_pdf', wod_id=wod.id) }}" class="button" style="background: #FF5722; color: white; text-decoration: none; border: none;">
                     📄 PDF
@@ -268,15 +257,11 @@
             btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞';
         }
 
-        // NUEVO: La función ahora recibe si es premium o no
         function confirmarGeneracion(form, len, isPremium) {
-            // Si ya hay contenido generado (len > 5)
             if (parseInt(len) > 5) {
-                // Si es premium, mensaje simple
                 if (isPremium) {
                     if (!confirm("¿Regenerar el contenido?")) return false;
                 } else {
-                    // Si NO es premium, advertencia de crédito
                     if (!confirm("¿Regenerar? Se gastará 1 crédito extra.")) return false;
                 }
             }
@@ -290,38 +275,52 @@
             alert("Copiado!");
         }
 
-        // NUEVO: Función para cerrar manualmente la Story
-        function cerrarStory(id) {
+        function cerrarStoryManualmente(id) {
             document.getElementById('story-capture-'+id).style.display = 'none';
         }
 
-        function descargarImagen(id, t) {
+        // --- FUNCIÓN OPTIMIZADA: INVISIBLE Y RÁPIDA ---
+        function descargarImagen(btn, id, t) {
             const captureDiv = document.getElementById('story-capture-'+id);
-            // Aseguramos que el botón de cerrar NO salga en la foto
-            const closeBtn = captureDiv.querySelector('.story-close-btn');
-            if(closeBtn) closeBtn.style.display = 'none';
+            const originalBtnText = btn.innerHTML;
 
-            captureDiv.style.display = 'flex'; 
-            
-            html2canvas(captureDiv, {
-                scale: 2, 
-                backgroundColor: null, 
-                useCORS: true
-            }).then(canvas => {
-                let l = document.createElement('a'); 
-                l.download = 'WOD-Story-' + t.replace(/\s/g, '_') + '.png'; 
-                l.href = canvas.toDataURL(); 
-                l.click();
-                // Ocultamos el div después de descargar
-                captureDiv.style.display = 'none';
-                // Volvemos a mostrar el botón de cerrar por si acaso
-                if(closeBtn) closeBtn.style.display = 'block';
-            }).catch(err => {
-                 console.error("Error generando imagen:", err);
-                 alert("Hubo un problema generando la imagen. Por favor, ciérrala manualmente e inténtalo de nuevo.");
-                 // Importante: Si falla, volvemos a mostrar el botón de cerrar
-                 if(closeBtn) closeBtn.style.display = 'block';
-            });
+            // 1. Feedback inmediato en el botón
+            btn.innerHTML = '⚙️ Generando...';
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+
+            // 2. Mostrar el div pero FUERA DE PANTALLA (left: -9999px en CSS)
+            captureDiv.style.display = 'flex';
+
+            // 3. Espera mínima (100ms) solo para que el navegador pinte el layout
+            setTimeout(() => {
+                html2canvas(captureDiv, {
+                    scale: 2, 
+                    backgroundColor: null,
+                    useCORS: true,
+                    logging: false
+                }).then(canvas => {
+                    // 4. Descargar
+                    let l = document.createElement('a');
+                    l.download = 'WOD-Story-' + t.replace(/\s/g, '_') + '.png';
+                    l.href = canvas.toDataURL('image/png');
+                    l.click();
+
+                    // 5. Limpieza rápida
+                    captureDiv.style.display = 'none';
+                    btn.innerHTML = originalBtnText;
+                    btn.classList.remove('btn-loading');
+                    btn.disabled = false;
+
+                }).catch(err => {
+                     console.error("Error generando imagen:", err);
+                     alert("Hubo un problema generando la imagen.");
+                     captureDiv.style.display = 'none';
+                     btn.innerHTML = originalBtnText;
+                     btn.classList.remove('btn-loading');
+                     btn.disabled = false;
+                });
+            }, 100); // <-- 100ms es suficiente para pintar y mucho más rápido que 800ms
         }
     </script>
 </body>
