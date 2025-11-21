@@ -475,8 +475,18 @@ def stripe_webhook():
 @app.route('/super_admin')
 @login_required
 def super_admin():
+    # Solo tú tienes acceso
     if current_user.email != "pau.garcia.ru@gmail.com": abort(403)
-    return render_template('admin_dashboard.html', users=User.query.all())
+    
+    # CÁLCULO DE MÉTRICAS QUE FALTABA
+    users = User.query.all()
+    total_users = len(users)
+    total_premium = sum(1 for u in users if u.is_premium)
+    
+    return render_template('admin_dashboard.html', 
+                           users=users, 
+                           total=total_users, # <-- Pasamos la variable total
+                           premium=total_premium) # <-- Pasamos la variable premium
 
 # --- PASSWORD RESET ---
 @app.route('/reset_password_request', methods=['GET', 'POST']) 
