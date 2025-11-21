@@ -4,8 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOD Master PRO</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=8">
-    <script src="[https://html2canvas.hertzen.com/dist/html2canvas.min.js](https://html2canvas.hertzen.com/dist/html2canvas.min.js)"></script>
+    
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7B9WGH73HH');
+    </script>
+
+    <style> .btn-loading { opacity: 0.7; cursor: not-allowed !important; } </style>
 </head>
 <body>
     <div class="container">
@@ -14,63 +27,37 @@
                 <h1>🦾 WOD Master SaaS</h1>
                 <div style="font-size: 0.9em; color: var(--text-muted); margin-top: 5px;">
                     Hola, <b>{{ user.gym_name }}</b> | 
-                    
-                    {% if user.is_premium %}
-                        <span style="color: gold; font-weight: bold;">👑 PLAN PRO (ILIMITADO)</span>
-                    {% else %}
-                        <span style="color: #00e676;">🌱 PLAN GRATIS</span> | 
-                        Créditos: <b style="color: white; background: #333; padding: 2px 6px; border-radius: 4px;">{{ user.credits }}</b>
-                        {% if user.credits == 0 %}
-                            <a href="{{ url_for('pricing') }}" style="color: #ff4081; font-weight: bold; margin-left: 5px;">➜ MEJORAR</a>
-                        {% endif %}
-                    {% endif %}
+                    {% if user.is_premium %}<span style="color: gold; font-weight: bold;">👑 PLAN PRO</span>{% else %}<span style="color: #00e676;">🌱 FREE</span>{% endif %}
                     
                     {% if user.stripe_customer_id %}
-                        <a href="{{ url_for('billing') }}" class="button secondary" 
-                           style="padding: 5px 12px; font-size: 0.8em; margin-left: 10px; border-radius: 20px; background: #333; border-color: #555; text-decoration: none;">
-                           💳 Facturación
-                        </a>
+                        <a href="{{ url_for('billing') }}" class="button secondary" style="padding: 5px 10px; font-size: 0.8em; margin-left: 10px; border-radius: 20px; text-decoration: none;">💳 Facturas</a>
                     {% endif %}
-
                     {% if user.email == "pau.garcia.ru@gmail.com" %}
-                        <a href="{{ url_for('super_admin') }}" class="button" 
-                           style="padding: 5px 12px; font-size: 0.8em; margin-left: 10px; border-radius: 20px; background: #d32f2f; color: white; text-decoration: none;">
-                           🕵️ Admin
-                        </a>
+                        <a href="{{ url_for('super_admin') }}" class="button" style="padding: 5px 10px; font-size: 0.8em; margin-left: 5px; border-radius: 20px; background: #d32f2f; color: white; text-decoration: none;">🕵️ Admin</a>
                     {% endif %}
-                    
-                    <a href="{{ url_for('logout') }}" class="button secondary" 
-                       style="padding: 5px 12px; font-size: 0.8em; margin-left: 10px; border-radius: 20px; text-decoration: none;">
-                       🚪 Salir
-                    </a>
+                    <a href="{{ url_for('logout') }}" class="button secondary" style="padding: 5px 10px; font-size: 0.8em; margin-left: 5px; border-radius: 20px; text-decoration: none;">🚪 Salir</a>
                 </div>
             </div>
             <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">🌞</button>
         </div>
 
+        <div style="background: rgba(41, 121, 255, 0.1); border: 1px solid #2979ff; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; color: var(--text-main);">
+            <span>📊 <b>Tus Estadísticas:</b> Has generado <b>{{ user.ai_uses_count if user.ai_uses_count else 0 }}</b> contenidos con IA.</span>
+            <span style="font-size: 0.9em; color: var(--text-muted);">(Ahorro estimado: {{ (user.ai_uses_count if user.ai_uses_count else 0) * 15 }} min)</span>
+        </div>
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div style="padding: 10px; margin-bottom: 20px; border-radius: 5px; 
-                         background: {{ '#00e676' if category == 'success' else '#cf6679' }}; 
-                         color: black; text-align: center; font-weight: bold;">
-                        {{ message }}
-                    </div>
+                    <div style="padding: 10px; margin-bottom: 20px; border-radius: 5px; background: {{ '#00e676' if category == 'success' else '#cf6679' }}; color: black; text-align: center; font-weight: bold;">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
         
-        <a href="{{ url_for('add_wod') }}" class="button primary" 
-           style="width: 100%; box-sizing: border-box; display:flex; align-items: center; justify-content: center;">
-            ➕ CREAR NUEVO WOD
-        </a>
+        <a href="{{ url_for('add_wod') }}" class="button primary btn-full-width">➕ CREAR NUEVO WOD</a>
         
         {% if not user.is_premium %}
-        <a href="{{ url_for('pricing') }}" class="button" 
-           style="width: 100%; box-sizing: border-box; display:flex; align-items: center; justify-content: center; 
-                  background: #ffc107; color: black; margin-top: 10px; font-weight: bold; border: 2px solid #ffc107;">
-            ⚡️ PASAR A PRO: Desbloquear Contenido Ilimitado y Premium
-        </a>
+        <a href="{{ url_for('pricing') }}" class="button btn-full-width" style="background: #ffc107; color: black; font-weight: bold; border: 2px solid #ffc107;">⚡️ PASAR A PRO</a>
         {% endif %}
 
         {% if not user.is_premium and user.credits <= 0 %}
@@ -87,45 +74,20 @@
         <div class="wod-card" id="card-{{wod.id}}">
             
             <div id="story-capture-{{wod.id}}" style="
-                position: fixed; top: 0; left: 0; 
-                width: 540px; height: 960px; 
+                position: fixed; top: 0; left: -9999px; width: 540px; height: 960px; 
                 background: linear-gradient(145deg, #121212, #2d2d2d); 
                 display: none; 
-                flex-direction: column; 
-                justify-content: center; 
-                align-items: center; 
-                padding: 40px;
-                box-sizing: border-box; 
-                text-align: center;
-                border: 8px solid var(--primary-color);
-                z-index: 9999;
-                font-family: 'Segoe UI', sans-serif;
-                color: white;
+                flex-direction: column; justify-content: center; align-items: center; 
+                padding: 40px; box-sizing: border-box; text-align: center; 
+                border: 8px solid var(--primary-color); z-index: 9999; 
+                font-family: 'Segoe UI', sans-serif; color: white;
             ">
-                <div style="font-size: 24px; text-transform: uppercase; letter-spacing: 2px; color: #aaaaaa; margin-bottom: 20px;">
-                    {{ user.gym_name }}
-                </div>
-                <h1 style="font-size: 56px; color: var(--primary-color); margin: 0 0 30px 0; line-height: 1.1; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
-                    {{ wod.title }}
-                </h1>
-                <div style="background: #ffffff22; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 18px; margin-bottom: 40px;">
-                    {{ wod.date.strftime('%d/%m') }} • {{ wod.category|upper }}
-                </div>
-                <div style="
-                    background: rgba(0,0,0,0.3); 
-                    padding: 30px; 
-                    border-radius: 15px; 
-                    width: 100%; 
-                    font-size: 26px; 
-                    white-space: pre-wrap; 
-                    text-align: left; 
-                    border-left: 5px solid var(--primary-color);
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                ">
-{{ wod.structure }}
-                </div>
-                <div style="margin-top: 50px; font-size: 18px; color: #888;">
-                    🔥 WORKOUT OF THE DAY 🔥
+                <div style="width: 100%;">
+                     <div style="font-size: 24px; text-transform: uppercase; letter-spacing: 2px; color: #aaaaaa; margin-bottom: 20px;">{{ user.gym_name }}</div>
+                    <h1 style="font-size: 48px; color: var(--primary-color); margin: 0 0 30px 0; line-height: 1.1;">{{ wod.title }}</h1>
+                    <div style="background: #ffffff22; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 18px; margin-bottom: 40px; display: inline-block;">{{ wod.date.strftime('%d/%m') }} • {{ wod.category|upper }}</div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 30px; border-radius: 15px; width: 100%; font-size: 24px; white-space: pre-wrap; text-align: left; border-left: 5px solid var(--primary-color);">{{ wod.structure }}</div>
+                    <div style="margin-top: 40px; font-size: 18px; color: #888;">🔥 WORKOUT OF THE DAY 🔥</div>
                 </div>
             </div>
 
@@ -134,144 +96,71 @@
                 <span class="wod-date">{{ wod.date.strftime('%d/%m/%Y') }}</span>
             </div>
             
-            <div style="margin-bottom: 15px; display: flex; gap: 10px;">
-                <span class="wod-tone">🎭 {{ wod.tone }}</span>
-                <span class="wod-tone" style="border-color: #9c27b0; color: #9c27b0;">🎯 {{ wod.target_audience }}</span>
-            </div>
-            
             <p style="white-space: pre-wrap; border-left: 2px solid var(--border-color); padding-left: 15px; color: var(--text-muted);">{{ wod.structure }}</p>
 
             <div class="no-capture" style="margin-top: 15px;">
                 <a href="{{ url_for('edit_wod', wod_id=wod.id) }}" class="button secondary">✏️ Editar</a>
-                <form action="{{ url_for('delete_wod', wod_id=wod.id) }}" method="POST" style="display:inline;">
-                    <button type="submit" class="button danger" onclick="return confirm('¿Seguro?')">🗑️</button>
-                </form>
-                <button class="download-btn" onclick="descargarImagen('{{wod.id}}', '{{wod.title}}')">📸 Story Pro</button>
-                
-                <a href="{{ url_for('export_pdf', wod_id=wod.id) }}" class="button" style="background: #FF5722; color: white; text-decoration: none; border: none;">
-                    📄 PDF
-                </a>
+                <form action="{{ url_for('delete_wod', wod_id=wod.id) }}" method="POST" style="display:inline;"><button type="submit" class="button danger" onclick="return confirm('¿Seguro?')">🗑️</button></form>
+                <button class="download-btn" onclick="descargarImagen(this, '{{wod.id}}', '{{wod.title}}')">📸 Story</button>
+                <a href="{{ url_for('export_pdf', wod_id=wod.id) }}" class="button" style="background: #FF5722; color: white; text-decoration: none; border: none;">📄 PDF</a>
             </div>
 
-            <form action="{{ url_for('generate_ai_content', wod_id=wod.id) }}" method="POST" onsubmit="return confirmarGeneracion(this, '{{ (wod.ai_instagram_post or "") | length }}')">
-                
+            <form action="{{ url_for('generate_ai_content', wod_id=wod.id) }}" method="POST" onsubmit="return confirmarGeneracion(this, '{{ (wod.ai_instagram_post or "") | length }}', {{ 'true' if user.is_premium else 'false' }})">
                 {% if user.is_premium or user.credits > 0 %}
-                    <button type="submit" class="button ai-button">
-                        ✨ GENERAR MARKETING IA 
-                        {% if not user.is_premium %}(Gasta 1 crédito){% endif %}
-                    </button>
+                    <button type="submit" class="button ai-button">✨ GENERAR MARKETING IA {% if not user.is_premium %}(Gasta 1 crédito){% endif %}</button>
                 {% else %}
-                    <a href="{{ url_for('pricing') }}" class="button ai-button" style="background: #555; cursor: not-allowed; text-align: center; display: block;">
-                        🔒 NECESITAS PLAN PRO
-                    </a>
+                    <a href="{{ url_for('pricing') }}" class="button ai-button" style="background: #555; cursor: not-allowed; text-align: center; display: block;">🔒 NECESITAS PLAN PRO</a>
                 {% endif %}
-                
                 <div class="loading-spinner"><div class="spinner"></div> Creando magia...</div>
             </form>
 
             {% if wod.ai_instagram_post or wod.ai_warmup or wod.ai_strategy %}
             <div class="ai-section no-capture">
                 <h3 style="color: #2979ff; border-bottom: 1px solid var(--border-color);">🤖 Kit Generado</h3>
-                
-                {% if wod.ai_strategy %}
-                <div class="result-group">
-                    <div class="result-header"><label style="color:#00e676;">🧠 Estrategia & Escalados:</label><button class="copy-btn" onclick="copiarTexto('strat-{{wod.id}}')">📋 Copiar</button></div>
-                    <textarea readonly id="strat-{{wod.id}}">{{ wod.ai_strategy }}</textarea>
-                </div>
-                {% endif %}
-
-                {% if wod.ai_warmup %}
-                <div class="result-group">
-                    <div class="result-header"><label style="color: #ff9800;">🔥 Warm-up:</label><button class="copy-btn" onclick="copiarTexto('warm-{{wod.id}}')">📋 Copiar</button></div>
-                    <textarea readonly id="warm-{{wod.id}}">{{ wod.ai_warmup }}</textarea>
-                </div>
-                {% endif %}
-                
-                {% if wod.ai_instagram_post %}
-                <div class="result-group">
-                    <div class="result-header"><label>📸 Instagram Post (Básico):</label><button class="copy-btn" onclick="copiarTexto('insta-{{wod.id}}')">📋 Copiar</button></div>
-                    <textarea readonly id="insta-{{wod.id}}">{{ wod.ai_instagram_post }}</textarea>
-                </div>
-                {% endif %}
-
+                {% if wod.ai_strategy %}<div class="result-group"><div class="result-header"><label style="color:#00e676;">🧠 Estrategia:</label><button class="copy-btn" onclick="copiarTexto('strat-{{wod.id}}')">📋</button></div><textarea readonly id="strat-{{wod.id}}">{{ wod.ai_strategy }}</textarea></div>{% endif %}
+                {% if wod.ai_warmup %}<div class="result-group"><div class="result-header"><label style="color: #ff9800;">🔥 Warm-up:</label><button class="copy-btn" onclick="copiarTexto('warm-{{wod.id}}')">📋</button></div><textarea readonly id="warm-{{wod.id}}">{{ wod.ai_warmup }}</textarea></div>{% endif %}
+                {% if wod.ai_instagram_post %}<div class="result-group"><div class="result-header"><label>📸 Post:</label><button class="copy-btn" onclick="copiarTexto('insta-{{wod.id}}')">📋</button></div><textarea readonly id="insta-{{wod.id}}">{{ wod.ai_instagram_post }}</textarea></div>{% endif %}
                 
                 {% if user.is_premium %}
-                <hr style="border-color: #9c27b0; margin-top: 30px; margin-bottom: 30px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div class="result-group">
-                            <div class="result-header"><label>📧 Newsletter / Email:</label><button class="copy-btn" onclick="copiarTexto('news-{{wod.id}}')">📋 Copiar</button></div>
-                            <textarea readonly id="news-{{wod.id}}" style="height: 250px;">{{ wod.ai_newsletter_text }}</textarea>
-                        </div>
-                        <div class="result-group">
-                            <div class="result-header"><label>🎬 Guion Reel / TikTok:</label><button class="copy-btn" onclick="copiarTexto('reel-{{wod.id}}')">📋 Copiar</button></div>
-                            <textarea readonly id="reel-{{wod.id}}" style="height: 250px;">{{ wod.ai_reel_script }}</textarea>
-                        </div>
-                    </div>
+                <hr style="border-color: #9c27b0; margin: 30px 0;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="result-group"><div class="result-header"><label>📧 Newsletter:</label><button class="copy-btn" onclick="copiarTexto('news-{{wod.id}}')">📋</button></div><textarea readonly id="news-{{wod.id}}" style="height: 250px;">{{ wod.ai_newsletter_text }}</textarea></div>
+                    <div class="result-group"><div class="result-header"><label>🎬 Reel:</label><button class="copy-btn" onclick="copiarTexto('reel-{{wod.id}}')">📋</button></div><textarea readonly id="reel-{{wod.id}}" style="height: 250px;">{{ wod.ai_reel_script }}</textarea></div>
+                </div>
                 {% else %}
-                    <div style="background: var(--bg-body); border: 2px dashed #9c27b0; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;">
-                        <h4 style="color: #9c27b0; margin-top: 0;">🔒 Contenido Exclusivo Plan PRO</h4>
-                        <p>El Guion de Reel y la Newsletter son exclusivos del plan PRO.</p>
-                        <a href="{{ url_for('pricing') }}" class="button download-btn" style="text-decoration: none;">¡MEJORAR A PRO!</a>
-                    </div>
+                <div style="background: var(--bg-body); border: 2px dashed #9c27b0; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;"><h4 style="color: #9c27b0; margin-top: 0;">🔒 Exclusivo Plan PRO</h4><p>Guion de Reel y Newsletter.</p><a href="{{ url_for('pricing') }}" class="button download-btn" style="text-decoration: none;">¡MEJORAR A PRO!</a></div>
                 {% endif %}
-                
             </div>
             {% endif %}
         </div>
         {% else %}
-            <div style="text-align: center; padding: 40px; border: 2px dashed var(--border-color); color: var(--text-muted);">
-                <h3>📭 Crea tu primer WOD para empezar</h3>
-            </div>
+            <div style="text-align: center; padding: 40px; border: 2px dashed var(--border-color); color: var(--text-muted);"><h3>📭 Crea tu primer WOD</h3></div>
         {% endfor %}
 
         <hr style="margin: 50px 0; border-color: #333;">
-        <div style="text-align: center; padding-bottom: 50px;">
-            <p style="color: #666; font-size: 0.8em;">Zona de Peligro</p>
-            <form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('⚠️ ¿ESTÁS SEGURO? Se borrarán todos tus datos y no se pueden recuperar.');">
-                <button type="submit" class="button danger" style="background: transparent; border: 1px solid #cf6679; color: #cf6679;">
-                    💀 Eliminar mi Cuenta
-                </button>
-            </form>
-        </div>
+        <div style="text-align: center; padding-bottom: 50px;"><form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('⚠️ ¿ESTÁS SEGURO? Se borrarán todos tus datos y no se pueden recuperar.');"><button type="submit" class="button danger" style="background: transparent; border: 1px solid #cf6679; color: #cf6679;">💀 Eliminar mi Cuenta</button></form></div>
     </div>
 
     <script>
         const btnTheme = document.getElementById('theme-toggle');
         const body = document.body;
-        if (localStorage.getItem('theme') === 'light') { body.classList.add('light-mode'); btnTheme.innerText = '🌙'; } 
-        else { btnTheme.innerText = '🌞'; }
-        
-        function toggleTheme() {
-            body.classList.toggle('light-mode');
-            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
-            btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞';
+        if (localStorage.getItem('theme') === 'light') { body.classList.add('light-mode'); btnTheme.innerText = '🌙'; } else { btnTheme.innerText = '🌞'; }
+        function toggleTheme() { body.classList.toggle('light-mode'); localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark'); btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞'; }
+        function confirmarGeneracion(form, len, isPremium) {
+            if (parseInt(len) > 5) { if (isPremium) { if (!confirm("¿Regenerar?")) return false; } else { if (!confirm("¿Regenerar? Gastarás 1 crédito.")) return false; } }
+            form.querySelector('.ai-button').style.display='none'; form.querySelector('.loading-spinner').style.display='block'; return true;
         }
-
-        function confirmarGeneracion(form, len) {
-            if (parseInt(len) > 5) return confirm("¿Regenerar? Se gastará 1 crédito extra.");
-            form.querySelector('.ai-button').style.display='none';
-            form.querySelector('.loading-spinner').style.display='block';
-            return true;
-        }
-
-        function copiarTexto(id) {
-            var t = document.getElementById(id); t.select(); navigator.clipboard.writeText(t.value);
-            alert("Copiado!");
-        }
-
-        function descargarImagen(id, t) {
+        function copiarTexto(id) { var t = document.getElementById(id); t.select(); navigator.clipboard.writeText(t.value); alert("Copiado!"); }
+        function descargarImagen(btn, id, t) {
             const captureDiv = document.getElementById('story-capture-'+id);
-            captureDiv.style.display = 'flex'; 
-            html2canvas(captureDiv, {
-                scale: 2, 
-                backgroundColor: null, 
-                useCORS: true
-            }).then(canvas => {
-                let l = document.createElement('a'); 
-                l.download = 'WOD-Story-' + t.replace(/\s/g, '_') + '.png'; 
-                l.href = canvas.toDataURL(); 
-                l.click();
-                captureDiv.style.display = 'none';
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '⚙️ Generando...'; btn.classList.add('btn-loading'); btn.disabled = true;
+            captureDiv.style.display = 'flex';
+            window.requestAnimationFrame(() => {
+                html2canvas(captureDiv, { scale: 2, backgroundColor: null, useCORS: true, logging: false }).then(canvas => {
+                    let l = document.createElement('a'); l.download = 'WOD-Story-' + t.replace(/\s/g, '_') + '.png'; l.href = canvas.toDataURL('image/png'); l.click();
+                    captureDiv.style.display = 'none'; btn.innerHTML = originalBtnText; btn.classList.remove('btn-loading'); btn.disabled = false;
+                }).catch(err => { alert("Error imagen."); captureDiv.style.display = 'none'; btn.innerHTML = originalBtnText; btn.disabled = false; });
             });
         }
     </script>
