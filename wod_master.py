@@ -279,8 +279,10 @@ def settings():
 # --- RUTAS LEGALES ---
 @app.route('/privacy')
 def privacy(): return render_template('privacy.html', now=datetime.now())
+
 @app.route('/terms')
 def terms(): return render_template('terms.html', now=datetime.now())
+
 @app.route('/contact')
 def contact(): return render_template('contact.html')
 

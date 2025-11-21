@@ -4,15 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Política de Privacidad - WOD Master PRO</title>
+    
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13">
 </head>
 <body>
     <div class="container" style="max-width: 800px; margin-top: 40px;">
-        <a href="{{ url_for('root') }}" class="button secondary" style="margin-bottom: 20px;">← Volver</a>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <a href="{{ url_for('root') }}" class="button secondary">← Volver</a>
+            <button id="theme-toggle" class="theme-toggle">🌞</button>
+        </div>
         
         <h1>Política de Privacidad</h1>
-        <p style="color: var(--text-muted);">Última actualización: {{ now.strftime('%d/%m/%Y') if now else 'Hoy' }}</p>
+        <p style="color: var(--text-muted);">Última actualización: <strong>{{ now.strftime('%d/%m/%Y') if now else 'Hoy' }}</strong></p>
 
         <div style="line-height: 1.6; color: var(--text-main);">
             <h3>1. Responsable del Tratamiento</h3>
@@ -59,5 +65,25 @@
         </div>
         <br><br>
     </div>
+
+    <script>
+        const btnTheme = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Aplica el tema guardado al cargar
+        if (localStorage.getItem('theme') === 'light') { 
+            body.classList.add('light-mode'); 
+            if(btnTheme) btnTheme.innerText = '🌙'; 
+        } else { 
+            if(btnTheme) btnTheme.innerText = '🌞'; 
+        }
+
+        function toggleTheme() {
+            body.classList.toggle('light-mode');
+            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+            btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞';
+        }
+        if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
+    </script>
 </body>
 </html>

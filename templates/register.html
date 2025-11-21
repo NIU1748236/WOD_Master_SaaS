@@ -4,18 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro - WOD Master SaaS</title>
+    
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5">
 </head>
 <body>
     <div class="container" style="max-width: 400px; margin-top: 50px;">
-        <h1 style="text-align: center;">🚀 Alta Nuevo Box</h1>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+            <h1 style="margin: 0;">🚀 Alta Nuevo Box</h1>
+            <button id="theme-toggle" class="theme-toggle">🌞</button>
+        </div>
         
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
                     <div style="padding: 10px; margin-bottom: 20px; border-radius: 5px; 
                          background: {{ '#00e676' if category == 'success' else '#cf6679' }}; 
-                         color: black; text-align: center;">
+                         color: black; text-align: center; font-weight: bold;">
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -40,5 +47,26 @@
             ¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Inicia sesión</a>
         </p>
     </div>
+
+    <script>
+        const btnTheme = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Función para aplicar el tema guardado al cargar
+        if (localStorage.getItem('theme') === 'light') { 
+            body.classList.add('light-mode'); 
+            if(btnTheme) btnTheme.innerText = '🌙'; 
+        } else { 
+            if(btnTheme) btnTheme.innerText = '🌞'; 
+        }
+
+        function toggleTheme() {
+            body.classList.toggle('light-mode');
+            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+            btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞';
+        }
+        // Asignar el listener al botón de toggle
+        if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
+    </script>
 </body>
 </html>

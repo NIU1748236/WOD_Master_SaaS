@@ -4,53 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Términos y Condiciones - WOD Master PRO</title>
+    
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13">
 </head>
 <body>
     <div class="container" style="max-width: 800px; margin-top: 40px;">
-        <a href="{{ url_for('root') }}" class="button secondary" style="margin-bottom: 20px;">← Volver</a>
-
-        <h1>Términos y Condiciones de Uso</h1>
-        <p style="color: var(--text-muted);">Última actualización: {{ now.strftime('%d/%m/%Y') if now else 'Hoy' }}</p>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <a href="{{ url_for('root') }}" class="button secondary">← Volver</a>
+            <button id="theme-toggle" class="theme-toggle">🌞</button>
+        </div>
+        
+        <h1>Términos y Condiciones</h1>
+        <p style="color: var(--text-muted);">Última actualización: <strong>{{ now.strftime('%d/%m/%Y') if now else 'Hoy' }}</strong></p>
 
         <div style="line-height: 1.6; color: var(--text-main);">
             <h3>1. Aceptación de los Términos</h3>
-            <p>Al registrarte y utilizar WOD Master PRO, aceptas cumplir con estos términos. Si no estás de acuerdo, no debes utilizar el servicio.</p>
+            <p>Al acceder y utilizar WOD Master PRO (el "Servicio"), aceptas quedar sujeto a los presentes Términos y Condiciones. Si no estás de acuerdo con alguna parte de los términos, no debes utilizar nuestro Servicio.</p>
 
-            <h3>2. Descripción del Servicio</h3>
-            <p>WOD Master PRO es un software como servicio (SaaS) que proporciona herramientas de gestión y generación de contenido mediante Inteligencia Artificial para gimnasios y entrenadores.</p>
-
-            <h3>3. Suscripción y Pagos</h3>
+            <h3>2. Uso del Servicio</h3>
             <ul>
-                <li><strong>Precio:</strong> El servicio "Plan PRO" tiene un coste de <strong>29€ al mes</strong> (impuestos incluidos si aplica).</li>
-                <li><strong>Cobro Recurrente:</strong> La suscripción se renueva automáticamente cada mes a menos que se cancele.</li>
-                <li><strong>Método de Pago:</strong> Los pagos son procesados de forma segura por Stripe.</li>
+                <li>El Servicio está destinado a la gestión y automatización de contenido de gimnasios y boxes de entrenamiento funcional.</li>
+                <li>Garantizas que toda la información que proporcionas es veraz, precisa y completa.</li>
+                <li>No nos hacemos responsables de lesiones, daños o pérdidas derivadas del uso de los entrenamientos o guiones generados por la IA. El contenido es una sugerencia y debe ser revisado por un profesional cualificado.</li>
             </ul>
 
-            <h3>4. Cancelación y Reembolsos</h3>
+            <h3>3. Pagos y Suscripciones (Stripe)</h3>
             <ul>
-                <li><strong>Cancelación:</strong> Puedes cancelar tu suscripción en cualquier momento desde el apartado "Facturación" en tu panel de control. Seguirás teniendo acceso PRO hasta el final del ciclo de facturación actual.</li>
-                <li><strong>Reembolsos:</strong> No ofrecemos reembolsos por períodos parciales o meses ya iniciados. Una vez cobrada la mensualidad, no se devuelve el importe, pero se mantiene el servicio activo hasta el final del mes pagado.</li>
+                <li>El procesamiento de pagos y la gestión de la suscripción (incluyendo renovaciones y cancelaciones) se realiza a través de **Stripe**.</li>
+                <li>Al suscribirte, autorizas a Stripe a cargar la tarifa mensual a tu método de pago.</li>
+                <li>Puedes cancelar tu suscripción en cualquier momento desde tu panel de usuario de la aplicación. La cancelación será efectiva al final del periodo de facturación en curso. No se ofrecen reembolsos por periodos parciales ya facturados.</li>
             </ul>
 
-            <h3>5. Uso de la Inteligencia Artificial</h3>
-            <p>El contenido generado (rutinas, emails, guiones) es creado por una IA (Google Gemini). Aunque nos esforzamos por la calidad:</p>
-            <ul>
-                <li><strong>Verificación:</strong> Es responsabilidad del entrenador o dueño del gimnasio revisar y verificar la exactitud y seguridad de los ejercicios y textos generados antes de publicarlos o prescribirlos.</li>
-                <li><strong>Responsabilidad:</strong> WOD Master PRO no se hace responsable de errores en la generación del contenido ni de lesiones derivadas de la aplicación de los entrenamientos sugeridos.</li>
-            </ul>
+            <h3>4. Propiedad Intelectual</h3>
+            <p>Todo el contenido generado para ti (WODs, textos de marketing, imágenes de Story) es de tu propiedad. Sin embargo, el código, el diseño de la plataforma y la marca "WOD Master PRO" siguen siendo propiedad de Pau García Ruiz.</p>
 
-            <h3>6. Propiedad Intelectual</h3>
-            <p>Tú conservas los derechos sobre los entrenamientos (WODs) que introduces. El contenido generado por la IA para tu cuenta te pertenece y puedes usarlo comercialmente para tu negocio.</p>
-
-            <h3>7. Cierre de Cuenta</h3>
-            <p>Nos reservamos el derecho de suspender cuentas que hagan un uso fraudulento, abusivo o ilegal de la plataforma. Tú también puedes eliminar tu cuenta y todos tus datos permanentemente desde el panel de control.</p>
-
-            <h3>8. Contacto</h3>
-            <p>Para cualquier duda legal o soporte, contáctanos en: <strong>pau.garcia.ru@gmail.com</strong></p>
+            <h3>5. Limitación de Responsabilidad</h3>
+            <p>WOD Master PRO se proporciona "tal cual". No garantizamos que el Servicio sea ininterrumpido o libre de errores. En ningún caso seremos responsables por daños indirectos o consecuentes derivados del uso o la imposibilidad de usar el Servicio.</p>
         </div>
         <br><br>
     </div>
+
+    <script>
+        const btnTheme = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Aplica el tema guardado al cargar
+        if (localStorage.getItem('theme') === 'light') { 
+            body.classList.add('light-mode'); 
+            if(btnTheme) btnTheme.innerText = '🌙'; 
+        } else { 
+            if(btnTheme) btnTheme.innerText = '🌞'; 
+        }
+
+        function toggleTheme() {
+            body.classList.toggle('light-mode');
+            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+            btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞';
+        }
+        if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
+    </script>
 </body>
 </html>
