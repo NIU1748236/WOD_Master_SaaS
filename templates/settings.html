@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajustes de Perfil - WOD Master</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container" style="max-width: 600px; margin-top: 40px;">
+        <div class="main-header">
+            <h1>⚙️ Ajustes de Perfil</h1>
+            <a href="{{ url_for('index') }}" class="button secondary">← Volver</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 10px; margin-bottom: 20px; border-radius: 5px; 
+                         background: {{ '#00e676' if category == 'success' else '#cf6679' }}; 
+                         color: black; text-align: center; font-weight: bold;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="wod-card" style="padding: 30px;">
+            <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                👤 Datos del Gimnasio
+            </h3>
+            <form method="POST">
+                <label>Nombre del Box / Gimnasio:</label>
+                <input type="text" name="gym_name" value="{{ user.gym_name }}" required>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="submit" class="button primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="wod-card" style="padding: 30px; margin-top: 30px;">
+            <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                🔒 Seguridad
+            </h3>
+            <form method="POST">
+                <label>Nueva Contraseña (Déjalo vacío si no quieres cambiarla):</label>
+                <input type="password" name="new_password" placeholder="********">
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="submit" class="button secondary">Actualizar Contraseña</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

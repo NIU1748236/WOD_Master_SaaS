@@ -11,6 +11,11 @@
 </head>
 <body>
     <div class="container" style="max-width: 400px; margin-top: 50px;">
+        
+        <div style="display: flex; justify-content: flex-end;">
+            <button id="theme-toggle" class="theme-toggle" style="margin-bottom: 20px;">🌞</button>
+        </div>
+
         <h1 style="text-align: center;">🔐 Acceso Gimnasio</h1>
         
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -51,5 +56,26 @@
             <a href="{{ url_for('contact') }}" style="color: var(--text-muted);">Contacto</a>
         </div>
     </div>
+
+    <script>
+        const btnTheme = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Función para aplicar el tema guardado al cargar
+        if (localStorage.getItem('theme') === 'light') { 
+            body.classList.add('light-mode'); 
+            if(btnTheme) btnTheme.innerText = '🌙'; 
+        } else { 
+            if(btnTheme) btnTheme.innerText = '🌞'; 
+        }
+
+        function toggleTheme() {
+            body.classList.toggle('light-mode');
+            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+            btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞';
+        }
+        // Asignar el listener al botón de toggle
+        if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
+    </script>
 </body>
 </html>

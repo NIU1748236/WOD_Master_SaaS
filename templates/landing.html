@@ -18,6 +18,7 @@
     </script>
 
     <style>
+        /* Estilos específicos para la Landing */
         .hero {
             text-align: center;
             padding: 80px 20px;
@@ -61,9 +62,10 @@
     <div class="landing-container">
         <div class="navbar">
             <div style="font-weight: bold; font-size: 1.2em;">🦾 WOD Master PRO</div>
-            <div>
+            <div style="display: flex; align-items: center;">
                 <a href="{{ url_for('login') }}" style="color: var(--text-main); margin-right: 20px; text-decoration: none;">Entrar</a>
-                <a href="{{ url_for('register') }}" class="button primary">Empezar Gratis</a>
+                <a href="{{ url_for('register') }}" class="button primary" style="margin-right: 10px;">Empezar Gratis</a>
+                <button id="theme-toggle" class="theme-toggle">🌞</button>
             </div>
         </div>
     </div>
@@ -121,6 +123,26 @@
     </div>
 
     <script>
+        const btnTheme = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Aplica el tema guardado al cargar
+        if (localStorage.getItem('theme') === 'light') { 
+            body.classList.add('light-mode'); 
+            if(btnTheme) btnTheme.innerText = '🌙'; 
+        } else { 
+            if(btnTheme) btnTheme.innerText = '🌞'; 
+        }
+
+        function toggleTheme() {
+            body.classList.toggle('light-mode');
+            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+            btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞';
+        }
+        // Asignar el listener al botón de toggle
+        if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
+
+
         if (!localStorage.getItem('cookiesAccepted')) {
             document.getElementById('cookie-banner').style.display = 'block';
         }

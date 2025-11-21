@@ -2,9 +2,10 @@ import os
 import json
 import time
 import io
+import random
 from datetime import datetime
 from dotenv import load_dotenv 
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort, send_file, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -151,32 +152,91 @@ def index():
     wods = Wod.query.filter_by(user_id=current_user.id).order_by(Wod.date.desc()).all()
     return render_template('index.html', wods=wods, user=current_user)
 
+# --- REGISTRO CON OTP Y EMAIL PROFESIONAL ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        if User.query.filter_by(email=request.form.get('email')).first():
-            flash('Email ya registrado', 'error')
+        email = request.form.get('email')
+        gym_name = request.form.get('gym_name')
+        password = request.form.get('password')
+
+        if User.query.filter_by(email=email).first():
+            flash('Email ya registrado.', 'error')
             return redirect(url_for('register'))
         
-        new_user = User(
-            email=request.form.get('email'),
-            gym_name=request.form.get('gym_name'),
-            credits=3, is_premium=False
-        )
-        new_user.set_password(request.form.get('password'))
-        db.session.add(new_user)
-        db.session.commit()
+        otp_code = str(random.randint(100000, 999999))
+        
+        session['signup_data'] = {
+            'email': email,
+            'gym_name': gym_name,
+            'password_hash': generate_password_hash(password),
+            'otp': otp_code
+        }
         
         try:
-            msg = Message('¡Bienvenido a WOD Master! 🚀', 
-                          sender=app.config['MAIL_USERNAME'], recipients=[new_user.email])
-            msg.body = f"Hola {new_user.gym_name},\n\nBienvenido. Tienes 3 créditos gratis.\nEntra aquí: {url_for('index', _external=True)}"
+            # CAMBIO: Nombre de remitente profesional
+            msg = Message('Tu Código de Verificación - WOD Master PRO', 
+                          sender=("WOD Master Support", app.config['MAIL_USERNAME']), 
+                          recipients=[email])
+            msg.body = f"Hola {gym_name},\n\nTu código de verificación es: {otp_code}\n\nIntrodúcelo en la web para activar tu cuenta."
             mail.send(msg)
-        except: pass
+            return redirect(url_for('verify_code'))
+        except Exception as e:
+            flash(f'Error enviando email: {e}', 'error')
+            return redirect(url_for('register'))
 
-        login_user(new_user)
-        return redirect(url_for('index'))
     return render_template('register.html')
+
+@app.route('/verify_code', methods=['GET', 'POST'])
+def verify_code():
+    if 'signup_data' not in session:
+        return redirect(url_for('register'))
+    
+    if request.method == 'POST':
+        user_code = request.form.get('code')
+        stored_data = session['signup_data']
+        
+        if user_code == stored_data['otp']:
+            new_user = User(
+                email=stored_data['email'],
+                gym_name=stored_data['gym_name'],
+                password_hash=stored_data['password_hash'],
+                credits=3,
+                is_premium=False
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            session.pop('signup_data', None)
+            login_user(new_user)
+            
+            try:
+                # CAMBIO: Nombre de remitente profesional
+                msg = Message('¡Bienvenido a WOD Master PRO! 🚀', 
+                            sender=("WOD Master Team", app.config['MAIL_USERNAME']), 
+                            recipients=[new_user.email])
+                msg.body = f"Cuenta activada correctamente. Tienes 3 créditos gratis.\nEntra aquí: {url_for('index', _external=True)}"
+                mail.send(msg)
+            except: pass
+            
+            flash('🎉 ¡Cuenta verificada!', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('❌ Código incorrecto.', 'error')
+            
+    return render_template('verify_code.html', email=session['signup_data']['email'])
+
+@app.route('/resend_code')
+def resend_code():
+    if 'signup_data' not in session: return redirect(url_for('register'))
+    new_otp = str(random.randint(100000, 999999))
+    session['signup_data']['otp'] = new_otp
+    try:
+        msg = Message('Nuevo Código', sender=("WOD Master Support", app.config['MAIL_USERNAME']), recipients=[session['signup_data']['email']])
+        msg.body = f"Tu nuevo código es: {new_otp}"
+        mail.send(msg)
+        flash('Código reenviado.', 'success')
+    except: flash('Error al enviar.', 'error')
+    return redirect(url_for('verify_code'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -195,18 +255,34 @@ def logout():
     logout_user()
     return redirect(url_for('root'))
 
+# --- RUTAS DE PERFIL Y AJUSTES (NUEVO) ---
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    if request.method == 'POST':
+        # Cambiar nombre
+        if 'gym_name' in request.form:
+            current_user.gym_name = request.form.get('gym_name')
+            db.session.commit()
+            flash('Nombre del gimnasio actualizado.', 'success')
+        
+        # Cambiar contraseña
+        if 'new_password' in request.form and request.form.get('new_password'):
+            current_user.set_password(request.form.get('new_password'))
+            db.session.commit()
+            flash('Contraseña actualizada.', 'success')
+            
+        return redirect(url_for('settings'))
+        
+    return render_template('settings.html', user=current_user)
+
 # --- RUTAS LEGALES ---
 @app.route('/privacy')
-def privacy():
-    return render_template('privacy.html', now=datetime.now())
-
+def privacy(): return render_template('privacy.html', now=datetime.now())
 @app.route('/terms')
-def terms():
-    return render_template('terms.html', now=datetime.now())
-
+def terms(): return render_template('terms.html', now=datetime.now())
 @app.route('/contact')
-def contact():
-    return render_template('contact.html')
+def contact(): return render_template('contact.html')
 
 # --- GESTIÓN DE WODS ---
 @app.route('/add_wod', methods=['GET', 'POST'])
@@ -276,48 +352,36 @@ def generate_ai_content(wod_id):
         flash('Error IA.', 'error')
     return redirect(url_for('index'))
 
-# --- EXPORTAR PDF MEJORADO ---
 @app.route('/export_pdf/<int:wod_id>')
 @login_required
 def export_pdf(wod_id):
     wod = Wod.query.filter_by(id=wod_id, user_id=current_user.id).first_or_404()
-
     class PDF(FPDF):
         def header(self):
-            # Franja azul superior
-            self.set_fill_color(41, 121, 255) # Azul corporativo
+            self.set_fill_color(41, 121, 255)
             self.rect(0, 0, 210, 40, 'F')
-            
-            # Nombre del Gimnasio
             self.set_font('Arial', 'B', 24)
-            self.set_text_color(255, 255, 255) # Blanco
+            self.set_text_color(255, 255, 255)
             self.set_y(10)
             gym_name = wod.user.gym_name.upper().encode('latin-1', 'replace').decode('latin-1')
             self.cell(0, 10, gym_name, 0, 1, 'C')
-            
-            # Subtítulo
             self.set_font('Arial', 'I', 12)
-            self.cell(0, 10, 'Programación Profesional', 0, 1, 'C')
+            self.cell(0, 10, 'Programacion Profesional', 0, 1, 'C')
             self.ln(20)
-
         def footer(self):
             self.set_y(-15)
             self.set_font('Arial', 'I', 8)
             self.set_text_color(128)
             self.cell(0, 10, f'Pagina {self.page_no()}/{{nb}} | WOD Master PRO', 0, 0, 'C')
-
         def chapter_title(self, label):
-            # Título de sección con fondo gris claro/azul
             self.set_font('Arial', 'B', 12)
             self.set_text_color(41, 121, 255)
-            self.set_fill_color(240, 248, 255) # Azul muy claro
+            self.set_fill_color(240, 248, 255)
             self.cell(0, 10, f"  {label}", 0, 1, 'L', 1)
             self.ln(4)
-
         def chapter_body(self, body):
             self.set_font('Arial', '', 11)
             self.set_text_color(0)
-            # Limpieza de caracteres para evitar errores de codificación en PDF
             safe_body = body.encode('latin-1', 'replace').decode('latin-1')
             self.multi_cell(0, 6, safe_body)
             self.ln(5)
@@ -325,16 +389,10 @@ def export_pdf(wod_id):
     pdf = PDF()
     pdf.alias_nb_pages()
     pdf.add_page()
-    
-    # --- CUERPO DEL PDF ---
-    
-    # Título del WOD
     pdf.set_font('Arial', 'B', 20)
     pdf.set_text_color(0)
     safe_title = wod.title.encode('latin-1', 'replace').decode('latin-1')
     pdf.cell(0, 10, safe_title, 0, 1, 'C')
-    
-    # Barra de Metadatos (Gris)
     pdf.set_fill_color(245, 245, 245)
     pdf.set_font('Arial', '', 10)
     pdf.set_text_color(80)
@@ -343,37 +401,17 @@ def export_pdf(wod_id):
     safe_meta = meta_text.encode('latin-1', 'replace').decode('latin-1')
     pdf.cell(0, 8, safe_meta, 0, 1, 'C', 1)
     pdf.ln(10)
-
-    # Secciones
     pdf.chapter_title("ESTRUCTURA DEL ENTRENAMIENTO")
     pdf.chapter_body(wod.structure)
-
-    if wod.objective:
-        pdf.chapter_title("OBJETIVO DEL ESTIMULO")
-        pdf.chapter_body(wod.objective)
-
-    if wod.ai_warmup:
-        pdf.chapter_title("CALENTAMIENTO (WARM-UP)")
-        pdf.chapter_body(wod.ai_warmup)
-
-    if wod.ai_strategy:
-        pdf.chapter_title("ESTRATEGIA Y ESCALADOS")
-        pdf.chapter_body(wod.ai_strategy)
-        
-    if wod.notes:
-        pdf.chapter_title("NOTAS ADICIONALES")
-        pdf.chapter_body(wod.notes)
-
-    # Generar
+    if wod.objective: pdf.chapter_title("OBJETIVO DEL ESTIMULO"); pdf.chapter_body(wod.objective)
+    if wod.ai_warmup: pdf.chapter_title("CALENTAMIENTO (WARM-UP)"); pdf.chapter_body(wod.ai_warmup)
+    if wod.ai_strategy: pdf.chapter_title("ESTRATEGIA Y ESCALADOS"); pdf.chapter_body(wod.ai_strategy)
+    if wod.notes: pdf.chapter_title("NOTAS ADICIONALES"); pdf.chapter_body(wod.notes)
     buffer = io.BytesIO()
     pdf_output = pdf.output(dest='S').encode('latin-1')
     buffer.write(pdf_output)
     buffer.seek(0)
-    
-    # Nombre archivo limpio
-    safe_filename = f"WOD_{wod.date.strftime('%Y%m%d')}.pdf"
-    
-    return send_file(buffer, as_attachment=True, download_name=safe_filename, mimetype='application/pdf')
+    return send_file(buffer, as_attachment=True, download_name=f"WOD_{wod.date.strftime('%Y%m%d')}.pdf", mimetype='application/pdf')
 
 @app.route('/delete_account', methods=['POST'])
 @login_required
@@ -425,20 +463,8 @@ def stripe_webhook():
 @app.route('/super_admin')
 @login_required
 def super_admin():
-    # Solo tú tienes acceso
-    if current_user.email != "pau.garcia.ru@gmail.com":
-        abort(403)
-        
-    users = User.query.all()
-    # 1. CÁLCULO
-    total_users = len(users)
-    total_premium = sum(1 for u in users if u.is_premium)
-    
-    # 2. RENDERIZADO: Asegurarse de que las variables se pasen
-    return render_template('admin_dashboard.html', 
-                            users=users, 
-                            total=total_users, # <-- Esto es lo que imprime {{ total }}
-                            premium=total_premium) # <-- Esto es lo que imprime {{ premium }}
+    if current_user.email != "pau.garcia.ru@gmail.com": abort(403)
+    return render_template('admin_dashboard.html', users=User.query.all())
 
 # --- PASSWORD RESET ---
 @app.route('/reset_password_request', methods=['GET', 'POST']) 
@@ -448,7 +474,9 @@ def reset_request():
         if user:
             token = s.dumps(user.email, salt='recuperar')
             link = url_for('reset_token', token=token, _external=True)
-            mail.send(Message('Reset Password', sender=app.config['MAIL_USERNAME'], recipients=[user.email], body=f'Link: {link}'))
+            msg = Message('Reset Password', sender=("WOD Master Support", app.config['MAIL_USERNAME']), recipients=[user.email])
+            msg.body = f'Link: {link}'
+            mail.send(msg)
             flash('Correo enviado', 'success')
     return render_template('reset_request.html')
 

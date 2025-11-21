@@ -11,7 +11,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>✏️ Editar Entrenamiento</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+            <h1>✏️ Editar Entrenamiento</h1>
+            <button id="theme-toggle" class="theme-toggle">🌞</button>
+        </div>
         
         <form method="POST">
             <div style="display: flex; gap: 20px;">
@@ -71,5 +74,25 @@
             <a href="{{ url_for('index') }}" class="button secondary">Cancelar</a>
         </form>
     </div>
+
+    <script>
+        const btnTheme = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Función para aplicar el tema guardado al cargar
+        if (localStorage.getItem('theme') === 'light') { 
+            body.classList.add('light-mode'); 
+            if(btnTheme) btnTheme.innerText = '🌙'; 
+        } else { 
+            if(btnTheme) btnTheme.innerText = '🌞'; 
+        }
+
+        function toggleTheme() {
+            body.classList.toggle('light-mode');
+            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+            btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞';
+        }
+        if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
+    </script>
 </body>
 </html>
