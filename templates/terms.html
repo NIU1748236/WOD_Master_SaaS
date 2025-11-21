@@ -1,14 +1,56 @@
 <!DOCTYPE html>
-<html>
-<head><title>Términos y Condiciones</title></head>
-<body style="font-family: sans-serif; padding: 40px; max-width: 800px; margin: 0 auto;">
-    <h1>Términos y Condiciones</h1>
-    <p>Al usar WOD Master SaaS, aceptas lo siguiente:</p>
-    <ul>
-        <li>El uso del servicio es bajo tu propia responsabilidad.</li>
-        <li>Las suscripciones se pueden cancelar en cualquier momento.</li>
-        <li>No nos hacemos responsables de lesiones derivadas de los entrenamientos generados.</li>
-    </ul>
-    <p><a href="/">Volver al inicio</a></p>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Términos y Condiciones - WOD Master PRO</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13">
+</head>
+<body>
+    <div class="container" style="max-width: 800px; margin-top: 40px;">
+        <a href="{{ url_for('root') }}" class="button secondary" style="margin-bottom: 20px;">← Volver</a>
+
+        <h1>Términos y Condiciones de Uso</h1>
+        <p style="color: var(--text-muted);">Última actualización: {{ now.strftime('%d/%m/%Y') if now else 'Hoy' }}</p>
+
+        <div style="line-height: 1.6; color: var(--text-main);">
+            <h3>1. Aceptación de los Términos</h3>
+            <p>Al registrarte y utilizar WOD Master PRO, aceptas cumplir con estos términos. Si no estás de acuerdo, no debes utilizar el servicio.</p>
+
+            <h3>2. Descripción del Servicio</h3>
+            <p>WOD Master PRO es un software como servicio (SaaS) que proporciona herramientas de gestión y generación de contenido mediante Inteligencia Artificial para gimnasios y entrenadores.</p>
+
+            <h3>3. Suscripción y Pagos</h3>
+            <ul>
+                <li><strong>Precio:</strong> El servicio "Plan PRO" tiene un coste de <strong>29€ al mes</strong> (impuestos incluidos si aplica).</li>
+                <li><strong>Cobro Recurrente:</strong> La suscripción se renueva automáticamente cada mes a menos que se cancele.</li>
+                <li><strong>Método de Pago:</strong> Los pagos son procesados de forma segura por Stripe.</li>
+            </ul>
+
+            <h3>4. Cancelación y Reembolsos</h3>
+            <ul>
+                <li><strong>Cancelación:</strong> Puedes cancelar tu suscripción en cualquier momento desde el apartado "Facturación" en tu panel de control. Seguirás teniendo acceso PRO hasta el final del ciclo de facturación actual.</li>
+                <li><strong>Reembolsos:</strong> No ofrecemos reembolsos por períodos parciales o meses ya iniciados. Una vez cobrada la mensualidad, no se devuelve el importe, pero se mantiene el servicio activo hasta el final del mes pagado.</li>
+            </ul>
+
+            <h3>5. Uso de la Inteligencia Artificial</h3>
+            <p>El contenido generado (rutinas, emails, guiones) es creado por una IA (Google Gemini). Aunque nos esforzamos por la calidad:</p>
+            <ul>
+                <li><strong>Verificación:</strong> Es responsabilidad del entrenador o dueño del gimnasio revisar y verificar la exactitud y seguridad de los ejercicios y textos generados antes de publicarlos o prescribirlos.</li>
+                <li><strong>Responsabilidad:</strong> WOD Master PRO no se hace responsable de errores en la generación del contenido ni de lesiones derivadas de la aplicación de los entrenamientos sugeridos.</li>
+            </ul>
+
+            <h3>6. Propiedad Intelectual</h3>
+            <p>Tú conservas los derechos sobre los entrenamientos (WODs) que introduces. El contenido generado por la IA para tu cuenta te pertenece y puedes usarlo comercialmente para tu negocio.</p>
+
+            <h3>7. Cierre de Cuenta</h3>
+            <p>Nos reservamos el derecho de suspender cuentas que hagan un uso fraudulento, abusivo o ilegal de la plataforma. Tú también puedes eliminar tu cuenta y todos tus datos permanentemente desde el panel de control.</p>
+
+            <h3>8. Contacto</h3>
+            <p>Para cualquier duda legal o soporte, contáctanos en: <strong>pau.garcia.ru@gmail.com</strong></p>
+        </div>
+        <br><br>
+    </div>
 </body>
 </html>
