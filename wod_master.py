@@ -174,7 +174,6 @@ def register():
         }
         
         try:
-            # CAMBIO: Nombre de remitente profesional
             msg = Message('Tu Código de Verificación - WOD Master PRO', 
                           sender=("WOD Master Support", app.config['MAIL_USERNAME']), 
                           recipients=[email])
@@ -210,7 +209,6 @@ def verify_code():
             login_user(new_user)
             
             try:
-                # CAMBIO: Nombre de remitente profesional
                 msg = Message('¡Bienvenido a WOD Master PRO! 🚀', 
                             sender=("WOD Master Team", app.config['MAIL_USERNAME']), 
                             recipients=[new_user.email])
@@ -255,18 +253,16 @@ def logout():
     logout_user()
     return redirect(url_for('root'))
 
-# --- RUTAS DE PERFIL Y AJUSTES (NUEVO) ---
+# --- RUTAS DE PERFIL Y AJUSTES ---
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
     if request.method == 'POST':
-        # Cambiar nombre
         if 'gym_name' in request.form:
             current_user.gym_name = request.form.get('gym_name')
             db.session.commit()
             flash('Nombre del gimnasio actualizado.', 'success')
         
-        # Cambiar contraseña
         if 'new_password' in request.form and request.form.get('new_password'):
             current_user.set_password(request.form.get('new_password'))
             db.session.commit()
@@ -279,10 +275,8 @@ def settings():
 # --- RUTAS LEGALES ---
 @app.route('/privacy')
 def privacy(): return render_template('privacy.html', now=datetime.now())
-
 @app.route('/terms')
 def terms(): return render_template('terms.html', now=datetime.now())
-
 @app.route('/contact')
 def contact(): return render_template('contact.html')
 
@@ -415,16 +409,32 @@ def export_pdf(wod_id):
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"WOD_{wod.date.strftime('%Y%m%d')}.pdf", mimetype='application/pdf')
 
+# --- FUNCIÓN DE BORRADO BLINDADA ---
 @app.route('/delete_account', methods=['POST'])
 @login_required
 def delete_account():
-    user = current_user
-    logout_user()
-    Wod.query.filter_by(user_id=user.id).delete()
-    db.session.delete(user)
-    db.session.commit()
-    flash('Cuenta eliminada.', 'success')
-    return redirect(url_for('root'))
+    # 1. Guardamos el usuario en una variable ANTES de cerrar sesión
+    user_to_delete = current_user
+    try:
+        # 2. Borramos manualmente todos sus WODs para evitar error de Foreign Key
+        Wod.query.filter_by(user_id=user_to_delete.id).delete(synchronize_session=False)
+        
+        # 3. Borramos al usuario
+        db.session.delete(user_to_delete)
+        
+        # 4. Confirmamos los cambios en la DB
+        db.session.commit()
+        
+        # 5. SOLO AHORA cerramos la sesión (porque el usuario ya no existe)
+        logout_user()
+        
+        flash('Tu cuenta ha sido eliminada permanentemente. ¡Adiós! 😢', 'success')
+        return redirect(url_for('root'))
+        
+    except Exception as e:
+        db.session.rollback() # Si algo falla, deshacer cambios para no corromper
+        flash(f'Error al eliminar la cuenta: {str(e)}', 'error')
+        return redirect(url_for('settings'))
 
 # --- PAGOS Y ADMIN ---
 @app.route('/pricing')

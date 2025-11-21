@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajustes de Perfil - WOD Master</title>
-    
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -38,7 +36,6 @@
             <form method="POST">
                 <label>Nombre del Box / Gimnasio:</label>
                 <input type="text" name="gym_name" value="{{ user.gym_name }}" required>
-                
                 <div style="text-align: right; margin-top: 20px;">
                     <button type="submit" class="button primary">Guardar Cambios</button>
                 </div>
@@ -52,32 +49,41 @@
             <form method="POST">
                 <label>Nueva Contraseña (Déjalo vacío si no quieres cambiarla):</label>
                 <input type="password" name="new_password" placeholder="********">
-                
                 <div style="text-align: right; margin-top: 20px;">
                     <button type="submit" class="button secondary">Actualizar Contraseña</button>
                 </div>
             </form>
         </div>
+
+        <hr style="margin: 50px 0; border-color: #333;">
+        <div style="text-align: center; padding-bottom: 30px;">
+            <p style="color: #cf6679; font-weight: bold; font-size: 0.9em;">⚠️ ZONA DE PELIGRO</p>
+            <p style="color: var(--text-muted); font-size: 0.8em; margin-bottom: 20px;">
+                Esta acción es irreversible. Se borrarán todos tus WODs y datos.
+            </p>
+            <form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('⚠️ ¿ESTÁS SEGURO? Se borrarán todos tus datos y no se pueden recuperar.');">
+                <button type="submit" class="button danger" style="background: transparent; border: 2px solid #cf6679; color: #cf6679; font-weight: bold;">
+                    💀 Eliminar mi Cuenta Permanentemente
+                </button>
+            </form>
+        </div>
+
     </div>
 
     <script>
         const btnTheme = document.getElementById('theme-toggle');
         const body = document.body;
-        
-        // Aplica el tema guardado al cargar
         if (localStorage.getItem('theme') === 'light') { 
             body.classList.add('light-mode'); 
             if(btnTheme) btnTheme.innerText = '🌙'; 
         } else { 
             if(btnTheme) btnTheme.innerText = '🌞'; 
         }
-
         function toggleTheme() {
             body.classList.toggle('light-mode');
             localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
             btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞';
         }
-        // Asignar el listener al botón de toggle
         if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
     </script>
 </body>
