@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planes - WOD Master</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=8">
+    <style>
+        .pricing-container { display: flex; justify-content: center; gap: 30px; margin-top: 40px; flex-wrap: wrap; }
+        .card-price { 
+            background: var(--bg-card); border: 1px solid var(--border-color); 
+            padding: 30px; border-radius: 12px; width: 320px; text-align: center;
+            display: flex; flex-direction: column;
+            transition: transform 0.2s;
+        }
+        .card-price:hover { transform: translateY(-5px); border-color: #2979ff; }
+        .price-tag { font-size: 2.5em; font-weight: bold; margin: 20px 0; }
+        .features { list-style: none; padding: 0; text-align: left; margin-bottom: 30px; flex-grow: 1; }
+        .features li { margin-bottom: 12px; font-size: 0.95em; display: flex; align-items: center; }
+        .check { color: #00e676; margin-right: 10px; font-weight: bold; min-width: 20px; }
+        .cross { color: #cf6679; margin-right: 10px; font-weight: bold; min-width: 20px; }
+        .unavailable { color: var(--text-muted); text-decoration: line-through; opacity: 0.7; }
+    </style>
+</head>
+<body>
+    <div class="container" style="text-align: center;">
+        <h1 style="font-size: 3em; margin-bottom: 10px;">🚀 Desbloquea todo el poder</h1>
+        <p style="color: var(--text-muted); font-size: 1.2em;">Automatiza tu marketing y céntrate en entrenar.</p>
+        
+        <div class="pricing-container">
+            <div class="card-price">
+                <h3>Plan Inicial</h3>
+                <div class="price-tag">0€</div>
+                <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 20px;">Para probar la herramienta.</p>
+                
+                <ul class="features">
+                    <li><span class="check">✔</span> Gestión de WODs Ilimitada</li>
+                    <li><span class="check">✔</span> Descarga de Imágenes (Story)</li>
+                    <li><span class="check">✔</span> Estrategia y Escalados</li>
+                    <li><span class="check">✔</span> Calentamiento (Warm-up)</li>
+                    <li style="border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px;">
+                        <span class="check">⚠️</span> <b>Solo 3 Generaciones IA</b>
+                    </li>
+                    
+                    <li class="unavailable"><span class="cross">✘</span> Newsletter / Email Socios</li>
+                    <li class="unavailable"><span class="cross">✘</span> Guion Viral (Reel/TikTok)</li>
+                    <li class="unavailable"><span class="cross">✘</span> IA Ilimitada</li>
+                </ul>
+                <button class="button secondary" style="width: 100%;" disabled>Tu plan actual</button>
+            </div>
+
+            <div class="card-price" style="border: 2px solid #2979ff; background: rgba(41, 121, 255, 0.05);">
+                <div style="background: #2979ff; color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; align-self: center; margin-bottom: 10px;">RECOMENDADO</div>
+                <h3 style="color: #2979ff; margin: 0;">MASTER PRO 👑</h3>
+                <div class="price-tag">29€<span style="font-size:0.4em; color: var(--text-muted);">/mes</span></div>
+                <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 20px;">Para Boxes que quieren crecer.</p>
+
+                <ul class="features">
+                    <li><span class="check">✔</span> <b>Todo lo del Plan Inicial</b></li>
+                    <li><span class="check">✔</span> Generación IA&nbsp;<b>ILIMITADA</b></li>
+                    <li style="background: rgba(0, 230, 118, 0.1); padding: 5px; border-radius: 4px;">
+                        <span class="check">✔</span> <b>📧 Newsletter / Email Socios</b>
+                    </li>
+                    <li style="background: rgba(0, 230, 118, 0.1); padding: 5px; border-radius: 4px;">
+                        <span class="check">✔</span> <b>🎬 Guion Viral (Reel/TikTok)</b>
+                    </li>
+                    <li><span class="check">✔</span> Soporte Prioritario</li>
+                </ul>
+                
+                <form action="/create-checkout-session" method="POST" style="margin-top: auto;">
+                    <button type="submit" class="button primary" style="width: 100%; font-size: 1.1em; padding: 15px; box-shadow: 0 4px 14px rgba(41, 121, 255, 0.4);">
+                        👉 SUSCRIBIRSE AHORA
+                    </button>
+                </form>
+                <p style="font-size: 0.8em; margin-top: 10px; color: var(--text-muted);">Cancelación en cualquier momento.</p>
+            </div>
+        </div>
+
+        <br><br>
+        <a href="{{ url_for('index') }}" style="color: var(--text-muted);">← Volver al Panel</a>
+    </div>
+</body>
+</html>

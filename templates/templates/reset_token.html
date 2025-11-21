@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Contraseña - WOD Master</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5">
+</head>
+<body>
+    <div class="container" style="max-width: 450px; margin-top: 60px; text-align: center;">
+        <h1 style="margin-bottom: 10px;">🔒 Nueva Contraseña</h1>
+        <p style="color: var(--text-muted); margin-bottom: 30px;">
+            Elige una contraseña segura que no vayas a olvidar.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 12px; margin-bottom: 20px; border-radius: 6px; 
+                         background: {{ '#00e676' if category == 'success' else '#cf6679' }}; 
+                         color: black; font-weight: bold;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" style="text-align: left;">
+            <label>Nueva Contraseña:</label>
+            <input type="password" name="password" placeholder="Mínimo 6 caracteres" required 
+                   style="padding: 12px; font-size: 1.1em; margin-bottom: 20px;">
+            
+            <button type="submit" class="button primary" style="width: 100%; padding: 12px; font-size: 1.1em;">
+                💾 Guardar y Entrar
+            </button>
+        </form>
+    </div>
+</body>
+</html>
