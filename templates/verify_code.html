@@ -9,6 +9,11 @@
 </head>
 <body>
     <div class="container" style="max-width: 450px; margin-top: 60px; text-align: center;">
+        
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+            <button id="theme-toggle" class="theme-toggle">🌞</button>
+        </div>
+
         <h1 style="margin-bottom: 10px;">✉️ Verifica tu Email</h1>
         <p style="color: var(--text-muted);">
             Hemos enviado un código de 6 dígitos a:<br>
@@ -46,5 +51,24 @@
         <br>
         <a href="{{ url_for('register') }}" class="button secondary" style="font-size: 0.8em;">← Volver / Cambiar Email</a>
     </div>
+
+    <script>
+        const btnTheme = document.getElementById('theme-toggle');
+        const body = document.body;
+        if (localStorage.getItem('theme') === 'light') { 
+            body.classList.add('light-mode'); 
+            if(btnTheme) btnTheme.innerText = '🌙'; 
+        } else { 
+            if(btnTheme) btnTheme.innerText = '🌞'; 
+        }
+        if(btnTheme) {
+            btnTheme.addEventListener('click', function() {
+                body.classList.toggle('light-mode');
+                const isLight = body.classList.contains('light-mode');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                btnTheme.innerText = isLight ? '🌙' : '🌞';
+            });
+        }
+    </script>
 </body>
 </html>
