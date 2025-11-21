@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOD Master PRO</title>
-    
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH"></script>
     <script>
@@ -27,14 +25,25 @@
                 <h1>🦾 WOD Master SaaS</h1>
                 <div style="font-size: 0.9em; color: var(--text-muted); margin-top: 5px;">
                     Hola, <b>{{ user.gym_name }}</b> | 
-                    {% if user.is_premium %}<span style="color: gold; font-weight: bold;">👑 PLAN PRO</span>{% else %}<span style="color: #00e676;">🌱 FREE</span>{% endif %}
+                    
+                    {% if user.is_premium %}
+                        <span style="color: gold; font-weight: bold;">👑 PLAN PRO (ILIMITADO)</span>
+                    {% else %}
+                        <span style="color: #00e676;">🌱 PLAN GRATIS</span> | 
+                        Créditos: <b style="color: white; background: #333; padding: 2px 6px; border-radius: 4px;">{{ user.credits }}</b>
+                        {% if user.credits == 0 %}
+                            <a href="{{ url_for('pricing') }}" style="color: #ff4081; font-weight: bold; margin-left: 5px;">➜ MEJORAR</a>
+                        {% endif %}
+                    {% endif %}
                     
                     {% if user.stripe_customer_id %}
-                        <a href="{{ url_for('billing') }}" class="button secondary" style="padding: 5px 10px; font-size: 0.8em; margin-left: 10px; border-radius: 20px; text-decoration: none;">💳 Facturas</a>
+                        <a href="{{ url_for('billing') }}" class="button secondary" style="padding: 5px 10px; font-size: 0.8em; margin-left: 10px; border-radius: 20px; background: #333; border-color: #555; text-decoration: none;">💳 Facturas</a>
                     {% endif %}
+
                     {% if user.email == "pau.garcia.ru@gmail.com" %}
                         <a href="{{ url_for('super_admin') }}" class="button" style="padding: 5px 10px; font-size: 0.8em; margin-left: 5px; border-radius: 20px; background: #d32f2f; color: white; text-decoration: none;">🕵️ Admin</a>
                     {% endif %}
+                    
                     <a href="{{ url_for('logout') }}" class="button secondary" style="padding: 5px 10px; font-size: 0.8em; margin-left: 5px; border-radius: 20px; text-decoration: none;">🚪 Salir</a>
                 </div>
             </div>
@@ -73,15 +82,7 @@
         {% for wod in wods %}
         <div class="wod-card" id="card-{{wod.id}}">
             
-            <div id="story-capture-{{wod.id}}" style="
-                position: fixed; top: 0; left: -9999px; width: 540px; height: 960px; 
-                background: linear-gradient(145deg, #121212, #2d2d2d); 
-                display: none; 
-                flex-direction: column; justify-content: center; align-items: center; 
-                padding: 40px; box-sizing: border-box; text-align: center; 
-                border: 8px solid var(--primary-color); z-index: 9999; 
-                font-family: 'Segoe UI', sans-serif; color: white;
-            ">
+            <div id="story-capture-{{wod.id}}" style="position: fixed; top: 0; left: -9999px; width: 540px; height: 960px; background: linear-gradient(145deg, #121212, #2d2d2d); display: none; flex-direction: column; justify-content: center; align-items: center; padding: 40px; box-sizing: border-box; text-align: center; border: 8px solid var(--primary-color); z-index: 9999; font-family: 'Segoe UI', sans-serif; color: white;">
                 <div style="width: 100%;">
                      <div style="font-size: 24px; text-transform: uppercase; letter-spacing: 2px; color: #aaaaaa; margin-bottom: 20px;">{{ user.gym_name }}</div>
                     <h1 style="font-size: 48px; color: var(--primary-color); margin: 0 0 30px 0; line-height: 1.1;">{{ wod.title }}</h1>
@@ -101,7 +102,7 @@
             <div class="no-capture" style="margin-top: 15px;">
                 <a href="{{ url_for('edit_wod', wod_id=wod.id) }}" class="button secondary">✏️ Editar</a>
                 <form action="{{ url_for('delete_wod', wod_id=wod.id) }}" method="POST" style="display:inline;"><button type="submit" class="button danger" onclick="return confirm('¿Seguro?')">🗑️</button></form>
-                <button class="download-btn" onclick="descargarImagen(this, '{{wod.id}}', '{{wod.title}}')">📸 Story</button>
+                <button class="download-btn" onclick="descargarImagen(this, '{{wod.id}}', '{{wod.title}}')">📸 Story Pro</button>
                 <a href="{{ url_for('export_pdf', wod_id=wod.id) }}" class="button" style="background: #FF5722; color: white; text-decoration: none; border: none;">📄 PDF</a>
             </div>
 
@@ -137,9 +138,19 @@
             <div style="text-align: center; padding: 40px; border: 2px dashed var(--border-color); color: var(--text-muted);"><h3>📭 Crea tu primer WOD</h3></div>
         {% endfor %}
 
-        <hr style="margin: 50px 0; border-color: #333;">
-        <div style="text-align: center; padding-bottom: 50px;"><form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('⚠️ ¿ESTÁS SEGURO? Se borrarán todos tus datos y no se pueden recuperar.');"><button type="submit" class="button danger" style="background: transparent; border: 1px solid #cf6679; color: #cf6679;">💀 Eliminar mi Cuenta</button></form></div>
-    </div>
+        <hr style="margin: 20px 0; border-color: #333;">
+        <div style="text-align: center; padding-bottom: 10px;"> <p style="color: #666; font-size: 0.8em;">Zona de Peligro</p>
+            <form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('⚠️ ¿ESTÁS SEGURO? Se borrarán todos tus datos y no se pueden recuperar.');"><button type="submit" class="button danger" style="background: transparent; border: 1px solid #cf6679; color: #cf6679;">💀 Eliminar mi Cuenta</button></form>
+        </div>
+
+        <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.8em; border-top: 1px solid var(--border-color);">
+            <a href="{{ url_for('privacy') }}" style="color: var(--text-muted);">Privacidad</a> | 
+            <a href="{{ url_for('terms') }}" style="color: var(--text-muted);">Términos</a> | 
+            <a href="{{ url_for('contact') }}" style="color: var(--text-muted);">Contacto</a>
+            <br><br>
+            © 2024 WOD Master SaaS.
+        </div>
+        </div>
 
     <script>
         const btnTheme = document.getElementById('theme-toggle');

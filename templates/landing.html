@@ -6,8 +6,8 @@
     <title>WOD Master PRO - Automatización para Boxes</title>
     
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=12"> 
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13"> 
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH"></script>
     <script>
@@ -18,7 +18,6 @@
     </script>
 
     <style>
-        /* Estilos específicos para la Landing */
         .hero {
             text-align: center;
             padding: 80px 20px;
@@ -50,7 +49,6 @@
         }
         .landing-container { padding: 0 20px; }
 
-        /* BANNER COOKIES */
         #cookie-banner {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: #222; border-top: 1px solid #444;
@@ -111,7 +109,8 @@
 
     <div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.8em;">
         <a href="{{ url_for('privacy') }}" style="color: var(--text-muted);">Privacidad</a> | 
-        <a href="{{ url_for('terms') }}" style="color: var(--text-muted);">Términos</a>
+        <a href="{{ url_for('terms') }}" style="color: var(--text-muted);">Términos</a> | 
+        <a href="{{ url_for('contact') }}" style="color: var(--text-muted);">Contacto</a>
         <br><br>
         © 2024 WOD Master SaaS.
     </div>

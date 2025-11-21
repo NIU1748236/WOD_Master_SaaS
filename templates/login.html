@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - WOD Master SaaS</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5">
+    
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13">
 </head>
 <body>
     <div class="container" style="max-width: 400px; margin-top: 50px;">
@@ -43,8 +46,9 @@
         <hr style="border-color: var(--border-color); margin-top: 30px;">
 
         <div style="text-align: center; margin-top: 20px; font-size: 0.8em; color: var(--text-muted);">
-            <a href="{{ url_for('privacy') }}" style="color: var(--text-muted);">Política de Privacidad</a> | 
-            <a href="{{ url_for('terms') }}" style="color: var(--text-muted);">Términos y Condiciones</a>
+            <a href="{{ url_for('privacy') }}" style="color: var(--text-muted);">Privacidad</a> | 
+            <a href="{{ url_for('terms') }}" style="color: var(--text-muted);">Términos</a> | 
+            <a href="{{ url_for('contact') }}" style="color: var(--text-muted);">Contacto</a>
         </div>
     </div>
 </body>

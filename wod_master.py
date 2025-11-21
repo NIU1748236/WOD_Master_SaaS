@@ -200,6 +200,9 @@ def logout():
 def privacy(): return render_template('privacy.html')
 @app.route('/terms')
 def terms(): return render_template('terms.html')
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
 
 # --- GESTIÓN DE WODS ---
 @app.route('/add_wod', methods=['GET', 'POST'])
@@ -418,8 +421,20 @@ def stripe_webhook():
 @app.route('/super_admin')
 @login_required
 def super_admin():
-    if current_user.email != "pau.garcia.ru@gmail.com": abort(403)
-    return render_template('admin_dashboard.html', users=User.query.all())
+    # Solo tú tienes acceso
+    if current_user.email != "pau.garcia.ru@gmail.com":
+        abort(403)
+        
+    users = User.query.all()
+    # 1. CÁLCULO
+    total_users = len(users)
+    total_premium = sum(1 for u in users if u.is_premium)
+    
+    # 2. RENDERIZADO: Asegurarse de que las variables se pasen
+    return render_template('admin_dashboard.html', 
+                            users=users, 
+                            total=total_users, # <-- Esto es lo que imprime {{ total }}
+                            premium=total_premium) # <-- Esto es lo que imprime {{ premium }}
 
 # --- PASSWORD RESET ---
 @app.route('/reset_password_request', methods=['GET', 'POST']) 

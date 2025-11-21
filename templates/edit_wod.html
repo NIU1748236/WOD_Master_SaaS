@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar WOD</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5">
+    <title>Editar WOD - WOD Master PRO</title>
+    
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13">
 </head>
 <body>
     <div class="container">
@@ -14,7 +17,7 @@
             <div style="display: flex; gap: 20px;">
                 <div style="flex:1;">
                     <label>Fecha:</label>
-                    <input type="date" name="date" value="{{ wod.date }}" required>
+                    <input type="date" name="date" value="{{ wod_date_str }}" required>
                 </div>
                 <div style="flex:1;">
                     <label>🏷️ Categoría:</label>
