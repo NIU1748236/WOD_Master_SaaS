@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOD Master PRO</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=14">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH"></script>
@@ -48,7 +48,7 @@
                     <a href="{{ url_for('logout') }}" class="button secondary" style="padding: 5px 10px; font-size: 0.8em; margin-left: 5px; border-radius: 20px; text-decoration: none;">🚪 Salir</a>
                 </div>
             </div>
-            <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">🌞</button>
+            <button id="theme-toggle" class="theme-toggle">🌞</button>
         </div>
 
         <div style="background: rgba(41, 121, 255, 0.1); border: 1px solid #2979ff; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; color: var(--text-main);">
@@ -83,13 +83,13 @@
         {% for wod in wods %}
         <div class="wod-card" id="card-{{wod.id}}">
             
-            <div id="story-capture-{{wod.id}}" style="position: fixed; top: 0; left: -9999px; width: 540px; height: 960px; background: linear-gradient(145deg, #121212, #2d2d2d); display: none; flex-direction: column; justify-content: center; align-items: center; padding: 40px; box-sizing: border-box; text-align: center; border: 8px solid var(--primary-color); z-index: 9999; font-family: 'Segoe UI', sans-serif; color: white;">
+            <div id="story-capture-{{wod.id}}" class="story-text-container" style="position: fixed; top: 0; left: -9999px; width: 540px; height: 960px; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 40px; box-sizing: border-box; z-index: 9999; font-family: 'Segoe UI', sans-serif;">
                 <div style="width: 100%;">
-                     <div style="font-size: 24px; text-transform: uppercase; letter-spacing: 2px; color: #aaaaaa; margin-bottom: 20px;">{{ user.gym_name }}</div>
-                    <h1 style="font-size: 48px; color: var(--primary-color); margin: 0 0 30px 0; line-height: 1.1;">{{ wod.title }}</h1>
-                    <div style="background: #ffffff22; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 18px; margin-bottom: 40px; display: inline-block;">{{ wod.date.strftime('%d/%m') }} • {{ wod.category|upper }}</div>
-                    <div style="background: rgba(0,0,0,0.3); padding: 30px; border-radius: 15px; width: 100%; font-size: 24px; white-space: pre-wrap; text-align: left; border-left: 5px solid var(--primary-color);">{{ wod.structure }}</div>
-                    <div style="margin-top: 40px; font-size: 18px; color: #888;">🔥 WORKOUT OF THE DAY 🔥</div>
+                     <div style="font-size: 24px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">{{ user.gym_name }}</div>
+                    <h1 class="story-text-container h1">{{ wod.title }}</h1>
+                    <div class="wod-details" style="background: #ffffff22; padding: 8px 20px; border-radius: 20px; font-weight: bold; margin-bottom: 40px; display: inline-block;">{{ wod.date.strftime('%d/%m') }} • {{ wod.category|upper }}</div>
+                    <div class="wod-structure" style="padding: 30px; width: 100%; white-space: pre-wrap; box-sizing: border-box;">{{ wod.structure }}</div>
+                    <div style="margin-top: 40px; font-size: 18px;">🔥 WORKOUT OF THE DAY 🔥</div>
                 </div>
             </div>
 
@@ -100,29 +100,33 @@
             
             <p style="white-space: pre-wrap; border-left: 2px solid var(--border-color); padding-left: 15px; color: var(--text-muted);">{{ wod.structure }}</p>
 
-            <div class="no-capture" style="margin-top: 15px;">
+            <div class="no-capture" style="margin-top: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <a href="{{ url_for('edit_wod', wod_id=wod.id) }}" class="button secondary">✏️ Editar</a>
                 <form action="{{ url_for('delete_wod', wod_id=wod.id) }}" method="POST" style="display:inline;"><button type="submit" class="button danger" onclick="return confirm('¿Seguro?')">🗑️</button></form>
+                
+                <select id="story-design-{{wod.id}}" style="padding: 10px 5px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 14px; margin-left: 10px;">
+                    <option value="dark">🌑 Minimal Dark</option>
+                    <option value="light">☀️ Light Contrast</option>
+                    <option value="gym">🏋️ Gym Banner</option>
+                </select>
+
                 <button class="download-btn" onclick="descargarImagen(this, '{{wod.id}}', '{{wod.title}}')">📸 Story Pro</button>
                 
                 <a href="{{ url_for('export_pdf', wod_id=wod.id) }}" class="button" style="background: #FF5722; color: white; text-decoration: none; border: none;">📄 PDF</a>
             </div>
 
             <form action="{{ url_for('generate_ai_content', wod_id=wod.id) }}" method="POST" onsubmit="return confirmarGeneracion(this, '{{ (wod.ai_instagram_post or "") | length }}', {{ 'true' if user.is_premium else 'false' }})">
-                
                 {% if user.is_premium or user.credits > 0 %}
                     <button type="submit" class="button ai-button">✨ GENERAR MARKETING IA {% if not user.is_premium %}(Gasta 1 crédito){% endif %}</button>
                 {% else %}
                     <a href="{{ url_for('pricing') }}" class="button ai-button" style="background: #555; cursor: not-allowed; text-align: center; display: block;">🔒 NECESITAS PLAN PRO</a>
                 {% endif %}
-                
                 <div class="loading-spinner"><div class="spinner"></div> Creando magia...</div>
             </form>
 
             {% if wod.ai_instagram_post or wod.ai_warmup or wod.ai_strategy %}
             <div class="ai-section no-capture">
                 <h3 style="color: #2979ff; border-bottom: 1px solid var(--border-color);">🤖 Kit Generado</h3>
-                
                 {% if wod.ai_strategy %}<div class="result-group"><div class="result-header"><label style="color:#00e676;">🧠 Estrategia:</label><button class="copy-btn" onclick="copiarTexto('strat-{{wod.id}}', this)">📋 Copiar</button></div><textarea readonly id="strat-{{wod.id}}">{{ wod.ai_strategy }}</textarea></div>{% endif %}
                 {% if wod.ai_warmup %}<div class="result-group"><div class="result-header"><label style="color: #ff9800;">🔥 Warm-up:</label><button class="copy-btn" onclick="copiarTexto('warm-{{wod.id}}', this)">📋 Copiar</button></div><textarea readonly id="warm-{{wod.id}}">{{ wod.ai_warmup }}</textarea></div>{% endif %}
                 {% if wod.ai_instagram_post %}<div class="result-group"><div class="result-header"><label>📸 Post:</label><button class="copy-btn" onclick="copiarTexto('insta-{{wod.id}}', this)">📋 Copiar</button></div><textarea readonly id="insta-{{wod.id}}">{{ wod.ai_instagram_post }}</textarea></div>{% endif %}
@@ -191,21 +195,50 @@
             }, 1500); 
         }
 
+        // --- FUNCIÓN RESTAURADA: SELECTOR DE DISEÑO Y DESCARGA ---
         function descargarImagen(btn, id, t) {
+            // Recuperar el diseño seleccionado
+            const designSelector = document.getElementById('story-design-'+id);
+            const selectedDesign = designSelector ? designSelector.value : 'dark';
+
             const captureDiv = document.getElementById('story-capture-'+id);
             const originalBtnText = btn.innerHTML;
+            
+            // Aplicar la clase de diseño
+            captureDiv.className = 'story-text-container design-' + selectedDesign;
 
             btn.innerHTML = '⚙️ Generando...';
             btn.classList.add('btn-loading');
             btn.disabled = true;
 
+            // Mostrar fuera de pantalla
             captureDiv.style.display = 'flex';
 
             window.requestAnimationFrame(() => {
-                html2canvas(captureDiv, { scale: 2, backgroundColor: null, useCORS: true, logging: false }).then(canvas => {
-                    let l = document.createElement('a'); l.download = 'WOD-Story-' + t.replace(/\s/g, '_') + '.png'; l.href = canvas.toDataURL('image/png'); l.click();
-                    captureDiv.style.display = 'none'; btn.innerHTML = originalBtnText; btn.classList.remove('btn-loading'); btn.disabled = false;
-                }).catch(err => { alert("Error imagen."); captureDiv.style.display = 'none'; btn.innerHTML = originalBtnText; btn.disabled = false; });
+                html2canvas(captureDiv, { 
+                    scale: 2, 
+                    backgroundColor: null,
+                    useCORS: true,
+                    logging: false
+                }).then(canvas => {
+                    let l = document.createElement('a'); 
+                    l.download = 'WOD-Story-' + selectedDesign + '-' + t.replace(/\s/g, '_') + '.png'; 
+                    l.href = canvas.toDataURL('image/png'); 
+                    l.click();
+
+                    captureDiv.style.display = 'none';
+                    // IMPORTANTE: Limpiar la clase para no acumular
+                    captureDiv.className = 'story-text-container'; 
+                    
+                    btn.innerHTML = originalBtnText;
+                    btn.classList.remove('btn-loading');
+                    btn.disabled = false;
+                }).catch(err => { 
+                     alert("Error al generar imagen. Intenta de nuevo.");
+                     captureDiv.style.display = 'none';
+                     btn.innerHTML = originalBtnText;
+                     btn.disabled = false;
+                });
             });
         }
     </script>

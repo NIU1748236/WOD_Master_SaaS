@@ -1,135 +1,162 @@
-/* --- SISTEMA DE TEMAS --- */
+/* --- 1. VARIABLES Y TEMA --- */
 :root {
-    --bg-body: #121212;
-    --bg-container: #1e1e1e;
-    --bg-card: #2c2c2c;
-    --text-main: #e0e0e0;
-    --text-muted: #aaaaaa;
-    --border-color: #333333;
-    --primary-color: #00e676;
-    --input-bg: #21252b;
+    --bg-body: #0f1115; /* Negro azulado profundo */
+    --bg-container: #161b22;
+    --bg-card: #1f252e;
+    --text-main: #e6edf3;
+    --text-muted: #8b949e;
+    --border-color: #30363d;
     
-    --ai-box-bg: #151515; 
-    --ai-box-border: #333;
-    --ai-text-color: #ffffff;
+    /* Colores de Acento */
+    --primary-color: #238636; /* Verde GitHub/Moderno */
+    --primary-hover: #2ea043;
+    --accent-blue: #2f81f7;
+    --accent-purple: #a371f7;
+    --accent-red: #f85149;
+    
+    --input-bg: #0d1117;
+    --shadow-card: 0 4px 20px rgba(0,0,0,0.4);
+    
+    --ai-box-bg: #0d1117; 
+    --ai-box-border: #30363d;
+    --ai-text-color: #e6edf3;
 }
 
 .light-mode {
-    --bg-body: #f0f2f5;
+    --bg-body: #f6f8fa;
     --bg-container: #ffffff;
-    --bg-card: #f8f9fa;
-    --text-main: #333333;
-    --text-muted: #666666;
-    --border-color: #dddddd;
-    --primary-color: #00c853;
-    --input-bg: #ffffff;
+    --bg-card: #ffffff;
+    --text-main: #24292f;
+    --text-muted: #57606a;
+    --border-color: #d0d7de;
     
-    --ai-box-bg: #f1f3f4;
-    --ai-box-border: #ccc;
-    --ai-text-color: #000000;
+    --primary-color: #1f883d;
+    --primary-hover: #1a7f37;
+    --accent-blue: #0969da;
+    --accent-purple: #8250df;
+    --accent-red: #cf222e;
+    
+    --input-bg: #f6f8fa;
+    --shadow-card: 0 2px 10px rgba(0,0,0,0.05);
+    
+    --ai-box-bg: #f6f8fa;
+    --ai-box-border: #d0d7de;
+    --ai-text-color: #24292f;
 }
 
+/* --- 2. BASE --- */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--bg-body);
     color: var(--text-main);
     margin: 0;
     padding: 20px;
-    transition: background-color 0.3s, color 0.3s;
+    line-height: 1.5;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .container {
     max-width: 900px;
     margin: 0 auto;
     background-color: var(--bg-container);
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-color);
 }
 
+h1, h2, h3 { margin-top: 0; font-weight: 700; letter-spacing: -0.02em; }
+h1 { color: var(--text-main); font-size: 2rem; }
+a { color: var(--accent-blue); text-decoration: none; font-weight: 500; transition: 0.2s; }
+a:hover { text-decoration: underline; }
+
+/* --- 3. HEADER Y NAVEGACIÓN --- */
 .main-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid var(--border-color);
-    padding-bottom: 20px;
-    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 25px;
+    margin-bottom: 30px;
 }
-
-h1 { color: var(--primary-color); margin: 0; }
-a { color: #2979ff; text-decoration: none; }
 
 .theme-toggle {
-    background: var(--bg-card);
+    background: transparent;
     border: 1px solid var(--border-color);
     color: var(--text-main);
-    padding: 8px 15px;
-    border-radius: 20px;
+    padding: 8px 12px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 1.2em;
+    transition: all 0.2s;
 }
+.theme-toggle:hover { background: var(--bg-card); border-color: var(--text-muted); }
 
-/* --- ETIQUETAS DE CATEGORÍA (TAGS) --- */
+/* --- 4. ETIQUETAS (TAGS) --- */
 .tag {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75em;
-    font-weight: bold;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7em;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
     margin-left: 10px;
     color: white;
     vertical-align: middle;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
-
-.tag-strength { background-color: #e53935; }
-.tag-cardio { background-color: #1e88e5; }
-.tag-metcon { background-color: #8e24aa; }
-.tag-gymnastics { background-color: #43a047; }
-.tag-benchmark { background-color: #fdd835; color: black; }
-.tag-hypertrophy { background-color: #ff9800; }
+/* Colores vibrantes para los tags */
+.tag-strength { background: linear-gradient(135deg, #ff5252, #d32f2f); }
+.tag-cardio { background: linear-gradient(135deg, #448aff, #1976d2); }
+.tag-metcon { background: linear-gradient(135deg, #e040fb, #7b1fa2); }
+.tag-gymnastics { background: linear-gradient(135deg, #69f0ae, #2e7d32); color: #000; }
+.tag-benchmark { background: linear-gradient(135deg, #ffd740, #ffc107); color: #000; }
+.tag-hypertrophy { background: linear-gradient(135deg, #ffab40, #ff6d00); color: #000; }
 .tag-general { background-color: #757575; }
 
-/* --- TARJETAS --- */
+/* --- 5. TARJETAS DE WOD --- */
 .wod-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 25px;
-    margin-bottom: 30px;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 35px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
 }
+.wod-card:hover { border-color: var(--text-muted); }
 
 .wod-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 10px;
-    margin-bottom: 15px;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
 }
-
-.wod-header h2 { margin: 0; color: var(--text-main); display: flex; align-items: center; }
-.wod-date { font-size: 0.9em; color: var(--text-muted); }
+.wod-header h2 { font-size: 1.6rem; margin: 0; }
+.wod-date { font-size: 0.85em; color: var(--text-muted); font-family: monospace; }
 
 .wod-tone { 
     background-color: var(--bg-body); 
-    padding: 4px 8px; 
-    border-radius: 4px; 
+    padding: 6px 12px; 
+    border-radius: 6px; 
     font-size: 0.8em; 
-    color: #2979ff;
+    color: var(--accent-blue);
     border: 1px solid var(--border-color);
+    font-weight: 600;
 }
 
-/* --- CAJAS DE TEXTO IA --- */
+/* --- 6. CAJAS DE RESULTADOS IA --- */
 .ai-section {
-    margin-top: 20px;
+    margin-top: 25px;
     background-color: var(--bg-body);
-    padding: 20px;
-    border-radius: 8px;
-    border-left: 4px solid #2979ff;
+    padding: 25px;
+    border-radius: 10px;
+    border-left: 4px solid var(--accent-blue);
 }
 
 .result-group { margin-bottom: 30px; }
-
 .result-header {
     display: flex;
     justify-content: space-between;
@@ -139,8 +166,10 @@ a { color: #2979ff; text-decoration: none; }
 
 .result-header label {
     margin: 0; 
-    color: #2979ff; 
-    font-size: 1.1em;
+    color: var(--accent-blue); 
+    text-transform: uppercase; 
+    font-size: 0.85em; 
+    letter-spacing: 1px;
     font-weight: bold;
 }
 
@@ -149,16 +178,16 @@ textarea {
     background-color: var(--input-bg);
     color: var(--text-main);
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 15px;
-    font-family: 'Consolas', 'Courier New', monospace;
-    resize: vertical;
-    min-height: 100px; 
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
     line-height: 1.6;
+    resize: vertical;
+    min-height: 100px;
     box-sizing: border-box;
-    font-size: 15px;
 }
-textarea:focus { border-color: #2979ff; outline: none; }
+textarea:focus { border-color: var(--accent-blue); outline: none; box-shadow: 0 0 0 2px rgba(47, 129, 247, 0.2); }
 
 .ai-section textarea {
     background-color: var(--ai-box-bg); 
@@ -167,78 +196,187 @@ textarea:focus { border-color: #2979ff; outline: none; }
     min-height: 200px;
 }
 
-/* BOTONES Y FORMULARIOS */
-.copy-btn {
-    background-color: var(--bg-card);
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
-    padding: 6px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-    margin-left: 5px;
-}
-.copy-btn:hover { background-color: var(--border-color); }
-
-.button, .download-btn { 
+/* --- 7. BOTONES MODERNOS --- */
+.button, .download-btn, .copy-btn {
     display: inline-block;
     padding: 10px 20px;
     border-radius: 6px;
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
-    border: none;
+    border: 1px solid transparent;
     font-size: 14px;
     text-decoration: none;
     text-align: center;
+    transition: all 0.2s ease;
 }
 
-.primary { background-color: var(--primary-color); color: #000; }
-.secondary { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); }
-.danger { background-color: #cf6679; color: #fff; }
-.download-btn { background-color: #7e57c2; color: white; border: none; }
-.download-btn:hover { background-color: #673ab7; }
+/* Primary (Verde) */
+.primary { 
+    background: var(--primary-color); 
+    color: white; 
+    border: none;
+}
+.primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
 
-.ai-button { background-color: #2979ff; color: white; width: 100%; margin-top: 10px; font-size: 16px; padding: 12px; }
+/* Secondary (Gris/Outline) */
+.secondary { 
+    background: var(--bg-card); 
+    color: var(--text-main); 
+    border: 1px solid var(--border-color); 
+}
+.secondary:hover { border-color: var(--text-muted); background: var(--bg-body); }
 
-/* NUEVAS CLASES PARA CORRECCIONES UI */
-.btn-full-width {
-    width: 100%;
-    box-sizing: border-box; /* CRÍTICO: Evita que el padding desborde el ancho */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 10px;
+/* Danger (Rojo) */
+.danger { background: transparent; color: var(--accent-red); border: 1px solid var(--border-color); }
+.danger:hover { background: rgba(248, 81, 73, 0.1); border-color: var(--accent-red); }
+
+/* Botón IA (Azul Degradado) */
+.ai-button { 
+    background: linear-gradient(135deg, #2f81f7, #0d4a99); 
+    color: white; 
+    width: 100%; 
+    margin-top: 15px; 
+    font-size: 16px; 
+    padding: 14px; 
+    border: none;
+    box-shadow: 0 4px 15px rgba(47, 129, 247, 0.3);
+}
+.ai-button:hover { filter: brightness(1.1); transform: scale(1.01); }
+
+/* Botón Story (Morado) */
+.download-btn { 
+    background: linear-gradient(135deg, #a371f7, #6e40c9); 
+    color: white; 
+    border: none; 
+}
+.download-btn:hover { filter: brightness(1.1); }
+
+/* Copy Button (Pequeño) - CORREGIDO */
+.copy-btn { 
+    padding: 4px 12px; 
+    font-size: 0.8em; 
+    background: var(--bg-card); 
+    border: 1px solid var(--border-color);
+    color: var(--text-main); /* <--- ESTO ES LO IMPORTANTE: Usa el color del tema */
+}
+.copy-btn:hover { 
+    border-color: var(--accent-blue); 
+    color: var(--accent-blue); 
+    background: var(--bg-body);
 }
 
-.story-close-btn {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    font-size: 40px;
-    color: white;
-    cursor: pointer;
-    z-index: 10000;
-    opacity: 0.7;
-    transition: opacity 0.3s;
-}
-.story-close-btn:hover { opacity: 1; }
+/* Clases de Utilidad */
+.btn-full-width { width: 100%; box-sizing: border-box; display: flex; justify-content: center; align-items: center; margin-top: 10px; }
+.btn-loading { opacity: 0.7; cursor: not-allowed !important; }
 
-.btn-loading {
-    opacity: 0.7;
-    cursor: not-allowed !important;
-}
-
-label { display: block; margin-top: 15px; color: var(--text-muted); }
+/* --- FORMULARIOS --- */
+label { display: block; margin-top: 20px; color: var(--text-muted); font-size: 0.9em; font-weight: 600; margin-bottom: 5px; }
 input, select {
     width: 100%;
     background-color: var(--input-bg);
     border: 1px solid var(--border-color);
     color: var(--text-main);
-    padding: 10px;
-    border-radius: 4px;
-    margin-top: 5px;
+    padding: 12px;
+    border-radius: 6px;
     box-sizing: border-box;
+    font-size: 1em;
 }
+input:focus, select:focus { border-color: var(--accent-blue); outline: none; }
+
+
+/* =========================================
+   DISEÑOS DE STORY PRO (MEJORADO)
+   ========================================= */
+
+.story-text-container {
+    font-family: 'Montserrat', 'Segoe UI', sans-serif; 
+    text-align: center;
+    box-sizing: border-box;
+    display: none; 
+}
+
+.story-text-container h1 { 
+    font-size: 3.5em; 
+    font-weight: 900; 
+    text-transform: uppercase; 
+    line-height: 1; 
+    margin-bottom: 20px;
+}
+
+/* 1. DARK */
+.design-dark {
+    background: radial-gradient(circle at center, #2c2c2c 0%, #000000 100%);
+    color: white;
+    border: 10px solid #2979ff; 
+}
+.design-dark h1 { color: #2979ff; text-shadow: 0 0 20px rgba(41, 121, 255, 0.5); }
+.design-dark .wod-structure {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 40px;
+    font-family: 'Courier New', monospace; 
+    font-weight: bold;
+    text-align: left;
+    color: #e0e0e0;
+}
+
+/* 2. LIGHT */
+.design-light {
+    background: #ffffff;
+    color: #000000;
+    border: 10px solid #000000;
+}
+.design-light h1 {
+    color: #000000;
+    background: #ffea00; 
+    display: inline-block;
+    padding: 5px 15px;
+    transform: rotate(-2deg);
+}
+.design-light .wod-structure {
+    background: #f4f4f4;
+    border-left: 8px solid #000000;
+    padding: 30px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+}
+
+/* 3. GYM BANNER */
+.design-gym {
+    background: linear-gradient(180deg, #b71c1c 0%, #7f0000 100%);
+    color: white;
+    border: none;
+    position: relative;
+}
+.design-gym:before {
+    content: "";
+    position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
+    border: 2px dashed rgba(255,255,255,0.5);
+    pointer-events: none;
+}
+.design-gym h1 {
+    font-style: italic;
+    color: #ffffff;
+    text-transform: uppercase;
+    font-size: 4em;
+}
+.design-gym .wod-structure {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 30px;
+    text-align: center;
+    border-radius: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.story-close-btn {
+    position: absolute; top: 20px; right: 30px;
+    font-size: 40px; color: white; cursor: pointer;
+    z-index: 10000; opacity: 0.7; transition: opacity 0.3s;
+}
+.story-close-btn:hover { opacity: 1; }
 
 .loading-spinner { display: none; text-align: center; margin-top: 15px; color: #2979ff; font-weight: bold; }
 .spinner { border: 4px solid rgba(100, 100, 100, 0.1); width: 24px; height: 24px; border-radius: 50%; border-left-color: #2979ff; animation: spin 1s ease infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }

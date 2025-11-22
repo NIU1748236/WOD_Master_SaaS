@@ -513,6 +513,16 @@ def reset_token(token):
         return redirect(url_for('login'))
     return render_template('reset_token.html')
 
+
+# --- PÁGINAS DE ERROR PERSONALIZADAS ---
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
+
 if __name__ == '__main__':
     with app.app_context(): db.create_all()
     app.run(debug=True)
