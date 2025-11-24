@@ -6,9 +6,9 @@
     <title>WOD Master PRO</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=15">
-    <script src="[https://html2canvas.hertzen.com/dist/html2canvas.min.js](https://html2canvas.hertzen.com/dist/html2canvas.min.js)"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     
-    <script async src="[https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH](https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH)"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -205,15 +205,17 @@
             const captureDiv = document.getElementById('story-capture-'+id);
             const originalBtnText = btn.innerHTML;
             
+            // Aseguramos clase y estilo
             captureDiv.className = 'story-text-container design-' + selectedDesign;
-
+            
             btn.innerHTML = '⚙️ Generando...';
             btn.classList.add('btn-loading');
             btn.disabled = true;
 
             captureDiv.style.display = 'flex';
 
-            window.requestAnimationFrame(() => {
+            // CORRECCIÓN: Usamos setTimeout para asegurar que el navegador renderice el div oculto antes de capturar
+            setTimeout(() => {
                 html2canvas(captureDiv, { 
                     scale: 2, 
                     backgroundColor: null,
@@ -221,7 +223,9 @@
                     logging: false
                 }).then(canvas => {
                     let l = document.createElement('a'); 
-                    l.download = 'WOD-Story-' + selectedDesign + '-' + t.replace(/\s/g, '_') + '.png'; 
+                    // Limpiamos el título para evitar errores en el nombre de archivo
+                    let safeTitle = t.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    l.download = 'WOD-Story-' + selectedDesign + '-' + safeTitle + '.png'; 
                     l.href = canvas.toDataURL('image/png'); 
                     l.click();
 
@@ -232,12 +236,13 @@
                     btn.classList.remove('btn-loading');
                     btn.disabled = false;
                 }).catch(err => { 
+                     console.error(err);
                      alert("Error al generar imagen. Intenta de nuevo.");
                      captureDiv.style.display = 'none';
                      btn.innerHTML = originalBtnText;
                      btn.disabled = false;
                 });
-            });
+            }, 500); // 500ms de margen
         }
     </script>
 </body>
