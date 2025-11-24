@@ -180,7 +180,7 @@ textarea {
     border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 15px;
-    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-family: inherit;
     font-size: 0.9em;
     line-height: 1.6;
     resize: vertical;
@@ -380,4 +380,5 @@ input:focus, select:focus { border-color: var(--accent-blue); outline: none; }
 
 .loading-spinner { display: none; text-align: center; margin-top: 15px; color: #2979ff; font-weight: bold; }
 .spinner { border: 4px solid rgba(100, 100, 100, 0.1); width: 24px; height: 24px; border-radius: 50%; border-left-color: #2979ff; animation: spin 1s ease infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
+
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
