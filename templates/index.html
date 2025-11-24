@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOD Master PRO</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=14">
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=15">
+    <script src="[https://html2canvas.hertzen.com/dist/html2canvas.min.js](https://html2canvas.hertzen.com/dist/html2canvas.min.js)"></script>
     
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH"></script>
+    <script async src="[https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH](https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH)"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -40,7 +40,7 @@
                         <a href="{{ url_for('billing') }}" class="button secondary" style="padding: 5px 10px; font-size: 0.8em; margin-left: 10px; border-radius: 20px; background: #333; border-color: #555; text-decoration: none;">💳 Facturas</a>
                     {% endif %}
 
-                    {% if user.email == "pau.garcia.ru@gmail.com" %}
+                    {% if is_super_admin %}
                         <a href="{{ url_for('super_admin') }}" class="button" style="padding: 5px 10px; font-size: 0.8em; margin-left: 5px; border-radius: 20px; background: #d32f2f; color: white; text-decoration: none;">🕵️ Admin</a>
                     {% endif %}
                     
@@ -102,6 +102,9 @@
 
             <div class="no-capture" style="margin-top: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <a href="{{ url_for('edit_wod', wod_id=wod.id) }}" class="button secondary">✏️ Editar</a>
+                
+                <a href="{{ url_for('add_wod', clone_from=wod.id) }}" class="button secondary" title="Duplicar WOD">📋 Clonar</a>
+                
                 <form action="{{ url_for('delete_wod', wod_id=wod.id) }}" method="POST" style="display:inline;"><button type="submit" class="button danger" onclick="return confirm('¿Seguro?')">🗑️</button></form>
                 
                 <select id="story-design-{{wod.id}}" style="padding: 10px 5px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 14px; margin-left: 10px;">
@@ -195,23 +198,19 @@
             }, 1500); 
         }
 
-        // --- FUNCIÓN RESTAURADA: SELECTOR DE DISEÑO Y DESCARGA ---
         function descargarImagen(btn, id, t) {
-            // Recuperar el diseño seleccionado
             const designSelector = document.getElementById('story-design-'+id);
             const selectedDesign = designSelector ? designSelector.value : 'dark';
 
             const captureDiv = document.getElementById('story-capture-'+id);
             const originalBtnText = btn.innerHTML;
             
-            // Aplicar la clase de diseño
             captureDiv.className = 'story-text-container design-' + selectedDesign;
 
             btn.innerHTML = '⚙️ Generando...';
             btn.classList.add('btn-loading');
             btn.disabled = true;
 
-            // Mostrar fuera de pantalla
             captureDiv.style.display = 'flex';
 
             window.requestAnimationFrame(() => {
@@ -227,7 +226,6 @@
                     l.click();
 
                     captureDiv.style.display = 'none';
-                    // IMPORTANTE: Limpiar la clase para no acumular
                     captureDiv.className = 'story-text-container'; 
                     
                     btn.innerHTML = originalBtnText;

@@ -3,6 +3,7 @@ import json
 import time
 import io
 import random
+from threading import Thread
 from datetime import datetime
 from dotenv import load_dotenv 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort, send_file, session
@@ -31,6 +32,9 @@ stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
 STRIPE_PRICE_ID = os.getenv('STRIPE_PRICE_ID')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET') 
+
+# EMAIL ADMIN
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'pau.garcia.ru@gmail.com')
 
 # MAIL
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -97,28 +101,45 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # ==========================================
-# 3. LÓGICA IA
+# 3. UTILIDADES (Email Async & IA)
 # ==========================================
+def send_async_email(app, msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print(f"Error enviando email async: {e}")
+
+def enviar_email_fondo(subject, recipients, body):
+    msg = Message(subject, sender=("WOD Master Support", app.config['MAIL_USERNAME']), recipients=recipients)
+    msg.body = body
+    Thread(target=send_async_email, args=(app, msg)).start()
+
 def generar_contenido_ai(wod):
     prompt = f"""
-    Actúa como Head Coach experto. 
-    WOD: {wod.title} ({wod.category}). Estructura: {wod.structure}. Objetivo: {wod.objective}. Tono: {wod.tone}. Público: {wod.target_audience}.
-    Genera JSON con estas claves exactas:
+    Actúa como Head Coach experto y Community Manager de un box de CrossFit.
+    WOD: {wod.title} ({wod.category}). 
+    Estructura: {wod.structure}. 
+    Objetivo: {wod.objective}. 
+    Tono: {wod.tone}. 
+    Público: {wod.target_audience}.
+
+    Genera un JSON válido con estas claves exactas (sin texto antes ni después, solo el JSON):
     {{
-        "strategy": "Estrategia y escalados.",
-        "warmup": "Calentamiento específico.",
-        "instagram_post": "Texto para post con hashtags.",
+        "strategy": "Estrategia detallada y opciones de escalado.",
+        "warmup": "Calentamiento específico progresivo.",
+        "instagram_post": "Texto persuasivo para post con hashtags.",
         "newsletter_text": "Email para socios motivador.",
-        "reel_script": "Guion viral para vídeo corto."
+        "reel_script": "Guion viral para vídeo corto (Hooks visuales)."
     }}
     """
     try:
         response = model.generate_content(prompt)
         clean_text = response.text.strip()
         if clean_text.startswith("```json"):
-            clean_text = clean_text.strip("```json").strip("```").strip()
-        elif clean_text.startswith("{") and clean_text.endswith("}"):
-            pass
+            clean_text = clean_text.replace("```json", "").replace("```", "").strip()
+        elif clean_text.startswith("```"):
+            clean_text = clean_text.replace("```", "").strip()
         
         data = json.loads(clean_text)
         
@@ -150,9 +171,9 @@ def landing():
 @login_required
 def index():
     wods = Wod.query.filter_by(user_id=current_user.id).order_by(Wod.date.desc()).all()
-    return render_template('index.html', wods=wods, user=current_user)
+    is_super_admin = (current_user.email == ADMIN_EMAIL)
+    return render_template('index.html', wods=wods, user=current_user, is_super_admin=is_super_admin)
 
-# --- REGISTRO CON OTP Y EMAIL PROFESIONAL ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -165,62 +186,28 @@ def register():
             return redirect(url_for('register'))
         
         otp_code = str(random.randint(100000, 999999))
+        session['signup_data'] = {'email': email, 'gym_name': gym_name, 'password_hash': generate_password_hash(password), 'otp': otp_code}
         
-        session['signup_data'] = {
-            'email': email,
-            'gym_name': gym_name,
-            'password_hash': generate_password_hash(password),
-            'otp': otp_code
-        }
-        
-        try:
-            msg = Message('Tu Código de Verificación - WOD Master PRO', 
-                          sender=("WOD Master Support", app.config['MAIL_USERNAME']), 
-                          recipients=[email])
-            msg.body = f"Hola {gym_name},\n\nTu código de verificación es: {otp_code}\n\nIntrodúcelo en la web para activar tu cuenta."
-            mail.send(msg)
-            return redirect(url_for('verify_code'))
-        except Exception as e:
-            flash(f'Error enviando email: {e}', 'error')
-            return redirect(url_for('register'))
-
+        body = f"Hola {gym_name},\n\nTu código de verificación es: {otp_code}\n\nIntrodúcelo en la web para activar tu cuenta."
+        enviar_email_fondo('Tu Código de Verificación - WOD Master PRO', [email], body)
+        return redirect(url_for('verify_code'))
     return render_template('register.html')
 
 @app.route('/verify_code', methods=['GET', 'POST'])
 def verify_code():
-    if 'signup_data' not in session:
-        return redirect(url_for('register'))
-    
+    if 'signup_data' not in session: return redirect(url_for('register'))
     if request.method == 'POST':
-        user_code = request.form.get('code')
-        stored_data = session['signup_data']
-        
-        if user_code == stored_data['otp']:
-            new_user = User(
-                email=stored_data['email'],
-                gym_name=stored_data['gym_name'],
-                password_hash=stored_data['password_hash'],
-                credits=3,
-                is_premium=False
-            )
+        if request.form.get('code') == session['signup_data']['otp']:
+            d = session['signup_data']
+            new_user = User(email=d['email'], gym_name=d['gym_name'], password_hash=d['password_hash'], credits=3, is_premium=False)
             db.session.add(new_user)
             db.session.commit()
             session.pop('signup_data', None)
             login_user(new_user)
-            
-            try:
-                msg = Message('¡Bienvenido a WOD Master PRO! 🚀', 
-                            sender=("WOD Master Team", app.config['MAIL_USERNAME']), 
-                            recipients=[new_user.email])
-                msg.body = f"Cuenta activada correctamente. Tienes 3 créditos gratis.\nEntra aquí: {url_for('index', _external=True)}"
-                mail.send(msg)
-            except: pass
-            
+            enviar_email_fondo('¡Bienvenido a WOD Master PRO! 🚀', [new_user.email], f"Cuenta activada. Tienes 3 créditos gratis.\nEntra aquí: {url_for('index', _external=True)}")
             flash('🎉 ¡Cuenta verificada!', 'success')
             return redirect(url_for('index'))
-        else:
-            flash('❌ Código incorrecto.', 'error')
-            
+        else: flash('❌ Código incorrecto.', 'error')
     return render_template('verify_code.html', email=session['signup_data']['email'])
 
 @app.route('/resend_code')
@@ -228,12 +215,8 @@ def resend_code():
     if 'signup_data' not in session: return redirect(url_for('register'))
     new_otp = str(random.randint(100000, 999999))
     session['signup_data']['otp'] = new_otp
-    try:
-        msg = Message('Nuevo Código', sender=("WOD Master Support", app.config['MAIL_USERNAME']), recipients=[session['signup_data']['email']])
-        msg.body = f"Tu nuevo código es: {new_otp}"
-        mail.send(msg)
-        flash('Código reenviado.', 'success')
-    except: flash('Error al enviar.', 'error')
+    enviar_email_fondo('Nuevo Código', [session['signup_data']['email']], f"Tu nuevo código es: {new_otp}")
+    flash('Código reenviado.', 'success')
     return redirect(url_for('verify_code'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -253,26 +236,15 @@ def logout():
     logout_user()
     return redirect(url_for('root'))
 
-# --- RUTAS DE PERFIL Y AJUSTES ---
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
     if request.method == 'POST':
-        if 'gym_name' in request.form:
-            current_user.gym_name = request.form.get('gym_name')
-            db.session.commit()
-            flash('Nombre del gimnasio actualizado.', 'success')
-        
-        if 'new_password' in request.form and request.form.get('new_password'):
-            current_user.set_password(request.form.get('new_password'))
-            db.session.commit()
-            flash('Contraseña actualizada.', 'success')
-            
+        if 'gym_name' in request.form: current_user.gym_name = request.form.get('gym_name'); db.session.commit(); flash('Nombre del gimnasio actualizado.', 'success')
+        if 'new_password' in request.form and request.form.get('new_password'): current_user.set_password(request.form.get('new_password')); db.session.commit(); flash('Contraseña actualizada.', 'success')
         return redirect(url_for('settings'))
-        
     return render_template('settings.html', user=current_user)
 
-# --- RUTAS LEGALES ---
 @app.route('/privacy')
 def privacy(): return render_template('privacy.html', now=datetime.now())
 @app.route('/terms')
@@ -280,10 +252,16 @@ def terms(): return render_template('terms.html', now=datetime.now())
 @app.route('/contact')
 def contact(): return render_template('contact.html')
 
-# --- GESTIÓN DE WODS ---
+# --- MODIFICADO: AÑADIR WOD (Soporta Clonación) ---
 @app.route('/add_wod', methods=['GET', 'POST'])
 @login_required
 def add_wod():
+    # Lógica de clonación (pre-llenado)
+    cloned_wod = None
+    if request.method == 'GET' and 'clone_from' in request.args:
+        source_id = request.args.get('clone_from')
+        cloned_wod = Wod.query.filter_by(id=source_id, user_id=current_user.id).first()
+
     if request.method == 'POST':
         try:
             nw = Wod(
@@ -299,10 +277,14 @@ def add_wod():
             )
             db.session.add(nw)
             db.session.commit()
+            flash('WOD guardado correctamente.', 'success')
             return redirect(url_for('index'))
         except Exception as e:
             flash(f'Error: {e}', 'error')
-    return render_template('add_wod.html')
+
+    # Por defecto fecha de hoy, incluso si clonamos (normalmente clonas para hoy)
+    default_date = datetime.now().strftime('%Y-%m-%d')
+    return render_template('add_wod.html', wod=cloned_wod, today_date=default_date)
 
 @app.route('/edit_wod/<int:wod_id>', methods=['GET', 'POST'])
 @login_required
@@ -337,15 +319,13 @@ def generate_ai_content(wod_id):
     if not current_user.is_premium and current_user.credits <= 0:
         flash('Sin créditos. Pásate a PRO.', 'error')
         return redirect(url_for('index'))
-    
     if generar_contenido_ai(wod):
         if not current_user.is_premium: current_user.credits -= 1
         if current_user.ai_uses_count is None: current_user.ai_uses_count = 0
         current_user.ai_uses_count += 1
         db.session.commit()
         flash('Contenido generado.', 'success')
-    else:
-        flash('Error IA.', 'error')
+    else: flash('Error IA.', 'error')
     return redirect(url_for('index'))
 
 @app.route('/export_pdf/<int:wod_id>')
@@ -409,34 +389,22 @@ def export_pdf(wod_id):
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"WOD_{wod.date.strftime('%Y%m%d')}.pdf", mimetype='application/pdf')
 
-# --- FUNCIÓN DE BORRADO BLINDADA ---
 @app.route('/delete_account', methods=['POST'])
 @login_required
 def delete_account():
-    # 1. Guardamos el usuario en una variable ANTES de cerrar sesión
     user_to_delete = current_user
     try:
-        # 2. Borramos manualmente todos sus WODs para evitar error de Foreign Key
         Wod.query.filter_by(user_id=user_to_delete.id).delete(synchronize_session=False)
-        
-        # 3. Borramos al usuario
         db.session.delete(user_to_delete)
-        
-        # 4. Confirmamos los cambios en la DB
         db.session.commit()
-        
-        # 5. SOLO AHORA cerramos la sesión (porque el usuario ya no existe)
         logout_user()
-        
-        flash('Tu cuenta ha sido eliminada permanentemente. ¡Adiós! 😢', 'success')
+        flash('Cuenta eliminada. ¡Adiós!', 'success')
         return redirect(url_for('root'))
-        
     except Exception as e:
-        db.session.rollback() # Si algo falla, deshacer cambios para no corromper
-        flash(f'Error al eliminar la cuenta: {str(e)}', 'error')
+        db.session.rollback()
+        flash(f'Error: {str(e)}', 'error')
         return redirect(url_for('settings'))
 
-# --- PAGOS Y ADMIN ---
 @app.route('/pricing')
 def pricing(): return render_template('pricing.html', STRIPE_PUBLISHABLE_KEY=STRIPE_PUBLISHABLE_KEY, STRIPE_PRICE_ID=STRIPE_PRICE_ID)
 
@@ -456,39 +424,43 @@ def create_checkout_session():
 @login_required
 def billing():
     if not current_user.stripe_customer_id: return redirect(url_for('pricing'))
-    session = stripe.billing_portal.Session.create(
-        customer=current_user.stripe_customer_id, return_url=url_for('index', _external=True))
+    session = stripe.billing_portal.Session.create(customer=current_user.stripe_customer_id, return_url=url_for('index', _external=True))
     return redirect(session.url)
 
 @app.route('/success')
 @login_required
-def success():
-    current_user.is_premium = True
-    db.session.commit()
-    return redirect(url_for('index'))
+def success(): current_user.is_premium = True; db.session.commit(); return redirect(url_for('index'))
 
 @app.route('/webhook', methods=['POST'])
 def stripe_webhook():
-    # Lógica simplificada
+    payload = request.data
+    sig_header = request.headers.get('Stripe-Signature')
+    event = None
+    try: event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+    except: return 'Error', 400
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        uid = session.get('client_reference_id')
+        cust_id = session.get('customer')
+        if uid:
+            with app.app_context():
+                u = User.query.get(uid)
+                if u: u.is_premium = True; u.credits = 999999; u.stripe_customer_id = cust_id; db.session.commit()
+    elif event['type'] == 'customer.subscription.deleted':
+        sub = event['data']['object']
+        cust_id = sub.get('customer')
+        with app.app_context():
+            u = User.query.filter_by(stripe_customer_id=cust_id).first()
+            if u: u.is_premium = False; u.credits = 0; db.session.commit()
     return jsonify(success=True)
 
 @app.route('/super_admin')
 @login_required
 def super_admin():
-    # Solo tú tienes acceso
-    if current_user.email != "pau.garcia.ru@gmail.com": abort(403)
-    
-    # CÁLCULO DE MÉTRICAS QUE FALTABA
+    if current_user.email != ADMIN_EMAIL: abort(403)
     users = User.query.all()
-    total_users = len(users)
-    total_premium = sum(1 for u in users if u.is_premium)
-    
-    return render_template('admin_dashboard.html', 
-                           users=users, 
-                           total=total_users, # <-- Pasamos la variable total
-                           premium=total_premium) # <-- Pasamos la variable premium
+    return render_template('admin_dashboard.html', users=users, total=len(users), premium=sum(1 for u in users if u.is_premium))
 
-# --- PASSWORD RESET ---
 @app.route('/reset_password_request', methods=['GET', 'POST']) 
 def reset_request():
     if request.method == 'POST':
@@ -496,9 +468,7 @@ def reset_request():
         if user:
             token = s.dumps(user.email, salt='recuperar')
             link = url_for('reset_token', token=token, _external=True)
-            msg = Message('Reset Password', sender=("WOD Master Support", app.config['MAIL_USERNAME']), recipients=[user.email])
-            msg.body = f'Link: {link}'
-            mail.send(msg)
+            enviar_email_fondo('Reset Password', [user.email], f'Link: {link}')
             flash('Correo enviado', 'success')
     return render_template('reset_request.html')
 
@@ -508,20 +478,14 @@ def reset_token(token):
     except: return redirect(url_for('reset_request'))
     if request.method == 'POST':
         user = User.query.filter_by(email=email).first()
-        user.set_password(request.form.get('password'))
-        db.session.commit()
+        user.set_password(request.form.get('password')); db.session.commit()
         return redirect(url_for('login'))
     return render_template('reset_token.html')
 
-
-# --- PÁGINAS DE ERROR PERSONALIZADAS ---
 @app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html'), 404
-
+def page_not_found(e): return render_template('404.html'), 404
 @app.errorhandler(500)
-def internal_server_error(e):
-    return render_template('500.html'), 500
+def internal_server_error(e): return render_template('500.html'), 500
 
 if __name__ == '__main__':
     with app.app_context(): db.create_all()

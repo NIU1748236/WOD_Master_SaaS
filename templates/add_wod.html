@@ -13,7 +13,13 @@
     <div class="container">
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-            <h1>➕ Nuevo Entrenamiento</h1>
+            <h1>
+                {% if wod %}
+                    📋 Clonar Entrenamiento
+                {% else %}
+                    ➕ Nuevo Entrenamiento
+                {% endif %}
+            </h1>
             <button id="theme-toggle" class="theme-toggle">🌞</button>
         </div>
         
@@ -21,18 +27,18 @@
             <div style="display: flex; gap: 20px;">
                 <div style="flex:1;">
                     <label>Fecha:</label>
-                    <input type="date" name="date" required>
+                    <input type="date" name="date" value="{{ today_date }}" required>
                 </div>
                 <div style="flex:1;">
                     <label>🏷️ Categoría:</label>
                     <select name="category">
-                        <option value="Strength">🔴 Fuerza / Powerlifting</option>
-                        <option value="Hypertrophy">🟠 Hipertrofia / Bodybuilding</option>
-                        <option value="Metcon">🟣 Metcon / WOD</option>
-                        <option value="Cardio">🔵 Endurance / Cardio</option>
-                        <option value="Gymnastics">🟢 Gimnásticos</option>
-                        <option value="Benchmark">🟡 Benchmark (Hero WOD)</option>
-                        <option value="General">⚪ General</option>
+                        <option value="Strength" {% if wod and wod.category == 'Strength' %}selected{% endif %}>🔴 Fuerza / Powerlifting</option>
+                        <option value="Hypertrophy" {% if wod and wod.category == 'Hypertrophy' %}selected{% endif %}>🟠 Hipertrofia / Bodybuilding</option>
+                        <option value="Metcon" {% if wod and wod.category == 'Metcon' %}selected{% endif %}>🟣 Metcon / WOD</option>
+                        <option value="Cardio" {% if wod and wod.category == 'Cardio' %}selected{% endif %}>🔵 Endurance / Cardio</option>
+                        <option value="Gymnastics" {% if wod and wod.category == 'Gymnastics' %}selected{% endif %}>🟢 Gimnásticos</option>
+                        <option value="Benchmark" {% if wod and wod.category == 'Benchmark' %}selected{% endif %}>🟡 Benchmark (Hero WOD)</option>
+                        <option value="General" {% if wod and wod.category == 'General' %}selected{% endif %}>⚪ General</option>
                     </select>
                 </div>
             </div>
@@ -41,34 +47,36 @@
                 <div style="flex:1;">
                     <label>🎭 Tono de la IA:</label>
                     <select name="tone">
-                        <option value="Motivador y Épico">🔥 Motivador / Épico</option>
-                        <option value="Técnico y Profesional">🤓 Técnico / Profesional</option>
-                        <option value="Divertido y Comunitario">🤝 Divertido / Comunidad</option>
-                        <option value="Agresivo y Militar">🪖 Agresivo / Militar</option>
+                        <option value="Motivador y Épico" {% if wod and wod.tone == 'Motivador y Épico' %}selected{% endif %}>🔥 Motivador / Épico</option>
+                        <option value="Técnico y Profesional" {% if wod and wod.tone == 'Técnico y Profesional' %}selected{% endif %}>🤓 Técnico / Profesional</option>
+                        <option value="Divertido y Comunitario" {% if wod and wod.tone == 'Divertido y Comunitario' %}selected{% endif %}>🤝 Divertido / Comunidad</option>
+                        <option value="Agresivo y Militar" {% if wod and wod.tone == 'Agresivo y Militar' %}selected{% endif %}>🪖 Agresivo / Militar</option>
                     </select>
                 </div>
                 <div style="flex:1;">
                     <label>🎯 Público Objetivo:</label>
                     <select name="target_audience">
-                        <option value="General">👥 Socios Generales</option>
-                        <option value="Competidores">🏆 Competidores / Avanzados</option>
-                        <option value="Principiantes">🌱 Principiantes / On Ramp</option>
-                        <option value="Masters">👴 Masters (+40)</option>
+                        <option value="General" {% if wod and wod.target_audience == 'General' %}selected{% endif %}>👥 Socios Generales</option>
+                        <option value="Competidores" {% if wod and wod.target_audience == 'Competidores' %}selected{% endif %}>🏆 Competidores / Avanzados</option>
+                        <option value="Principiantes" {% if wod and wod.target_audience == 'Principiantes' %}selected{% endif %}>🌱 Principiantes / On Ramp</option>
+                        <option value="Masters" {% if wod and wod.target_audience == 'Masters' %}selected{% endif %}>👴 Masters (+40)</option>
                     </select>
                 </div>
             </div>
 
             <label>Título:</label>
-            <input type="text" name="title" placeholder="Ej: Murph, Fran, Heavy Day..." required>
+            <input type="text" name="title" placeholder="Ej: Murph, Fran, Heavy Day..." 
+                   value="{{ (wod.title + ' (Copia)') if wod else '' }}" required>
 
             <label>Estructura del WOD:</label>
-            <textarea name="structure" rows="5" placeholder="Ej: 5 Rondas de: 400m Run, 15 Thrusters..." required></textarea>
+            <textarea name="structure" rows="5" placeholder="Ej: 5 Rondas de: 400m Run, 15 Thrusters..." required>{{ wod.structure if wod else '' }}</textarea>
 
             <label>Objetivo del Estímulo:</label>
-            <input type="text" name="objective" placeholder="Ej: Mejorar capacidad aeróbica, fatiga muscular media...">
+            <input type="text" name="objective" placeholder="Ej: Mejorar capacidad aeróbica, fatiga muscular media..."
+                   value="{{ wod.objective if wod else '' }}">
 
             <label>Notas adicionales:</label>
-            <textarea name="notes" rows="2" placeholder="Notas sobre material, logística, etc."></textarea>
+            <textarea name="notes" rows="2" placeholder="Notas sobre material, logística, etc.">{{ wod.notes if wod else '' }}</textarea>
 
             <br><br>
             <button type="submit" class="button primary">Guardar WOD</button>
