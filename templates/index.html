@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOD Master PRO</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=15">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=17">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH"></script>
@@ -100,14 +100,14 @@
             
             <p style="white-space: pre-wrap; border-left: 2px solid var(--border-color); padding-left: 15px; color: var(--text-muted);">{{ wod.structure }}</p>
 
-            <div class="no-capture" style="margin-top: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <div class="wod-toolbar">
                 <a href="{{ url_for('edit_wod', wod_id=wod.id) }}" class="button secondary">✏️ Editar</a>
                 
                 <a href="{{ url_for('add_wod', clone_from=wod.id) }}" class="button secondary" title="Duplicar WOD">📋 Clonar</a>
                 
                 <form action="{{ url_for('delete_wod', wod_id=wod.id) }}" method="POST" style="display:inline;"><button type="submit" class="button danger" onclick="return confirm('¿Seguro?')">🗑️</button></form>
                 
-                <select id="story-design-{{wod.id}}" style="padding: 10px 5px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 14px; margin-left: 10px;">
+                <select id="story-design-{{wod.id}}" style="padding: 10px 5px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 14px;">
                     <option value="dark">🌑 Minimal Dark</option>
                     <option value="light">☀️ Light Contrast</option>
                     <option value="gym">🏋️ Gym Banner</option>
@@ -136,7 +136,7 @@
                 
                 {% if user.is_premium %}
                 <hr style="border-color: #9c27b0; margin: 30px 0;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="grid-responsive">
                     <div class="result-group"><div class="result-header"><label>📧 Newsletter:</label><button class="copy-btn" onclick="copiarTexto('news-{{wod.id}}', this)">📋 Copiar</button></div><textarea readonly id="news-{{wod.id}}" style="height: 250px;">{{ wod.ai_newsletter_text }}</textarea></div>
                     <div class="result-group"><div class="result-header"><label>🎬 Reel:</label><button class="copy-btn" onclick="copiarTexto('reel-{{wod.id}}', this)">📋 Copiar</button></div><textarea readonly id="reel-{{wod.id}}" style="height: 250px;">{{ wod.ai_reel_script }}</textarea></div>
                 </div>

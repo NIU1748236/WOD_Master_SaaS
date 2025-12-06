@@ -7,7 +7,7 @@
     
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=16">
 </head>
 <body>
     <div class="container">
@@ -17,7 +17,7 @@
         </div>
         
         <form method="POST">
-            <div style="display: flex; gap: 20px;">
+            <div class="row-responsive">
                 <div style="flex:1;">
                     <label>Fecha:</label>
                     <input type="date" name="date" value="{{ wod_date_str }}" required>
@@ -36,7 +36,7 @@
                 </div>
             </div>
 
-            <div style="display: flex; gap: 20px;">
+            <div class="row-responsive">
                 <div style="flex:1;">
                     <label>🎭 Tono de la IA:</label>
                     <select name="tone">

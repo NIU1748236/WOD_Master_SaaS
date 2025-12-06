@@ -180,7 +180,7 @@ textarea {
     border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 15px;
-    font-family: inherit; /* CORREGIDO: Ahora usa la fuente de la web, no monospace */
+    font-family: inherit;
     font-size: 0.9em;
     line-height: 1.6;
     resize: vertical;
@@ -251,7 +251,7 @@ textarea:focus { border-color: var(--accent-blue); outline: none; box-shadow: 0 
 }
 .download-btn:hover { filter: brightness(1.1); }
 
-/* Copy Button (Pequeño) - CORREGIDO */
+/* Copy Button (Pequeño) */
 .copy-btn { 
     padding: 4px 12px; 
     font-size: 0.8em; 
@@ -285,7 +285,7 @@ input:focus, select:focus { border-color: var(--accent-blue); outline: none; }
 
 
 /* =========================================
-   DISEÑOS DE STORY PRO (MEJORADO)
+   DISEÑOS DE STORY PRO
    ========================================= */
 
 .story-text-container {
@@ -381,3 +381,90 @@ input:focus, select:focus { border-color: var(--accent-blue); outline: none; }
 .loading-spinner { display: none; text-align: center; margin-top: 15px; color: #2979ff; font-weight: bold; }
 .spinner { border: 4px solid rgba(100, 100, 100, 0.1); width: 24px; height: 24px; border-radius: 50%; border-left-color: #2979ff; animation: spin 1s ease infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+/* =========================================
+   RESPONSIVE Y BARRA DE HERRAMIENTAS
+   ========================================= */
+
+/* Nueva barra de herramientas unificada para los botones del WOD */
+.wod-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px; /* Espaciado generoso entre botones */
+    align-items: center; /* Centrado vertical perfecto */
+    margin-top: 15px;
+}
+
+.wod-toolbar > * {
+    margin: 0 !important; /* Resetea márgenes individuales para usar solo el gap */
+}
+
+.wod-toolbar select {
+    flex-grow: 1; /* El selector ocupará el espacio disponible */
+    min-width: 180px; /* Evita que se haga diminuto */
+    width: auto;
+}
+
+.row-responsive {
+    display: flex;
+    gap: 20px;
+}
+
+.grid-responsive {
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px;
+}
+
+/* Ajustes específicos para pantallas pequeñas (móviles y tablets verticales) */
+@media (max-width: 768px) {
+    body { padding: 10px; }
+    .container { padding: 15px; width: 100%; box-sizing: border-box; }
+    .wod-card { padding: 15px; }
+
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.3rem; }
+    
+    .main-header, .wod-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .main-header > div { width: 100%; }
+
+    .card-price {
+        width: 100% !important; 
+        max-width: none !important;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+    }
+
+    .row-responsive {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .grid-responsive {
+        grid-template-columns: 1fr;
+    }
+
+    /* Ajustes específicos de la barra de herramientas en móvil */
+    .wod-toolbar {
+        gap: 10px; /* Gap un poco menor en móvil */
+    }
+    
+    .wod-toolbar > a, 
+    .wod-toolbar > button, 
+    .wod-toolbar > select {
+        flex: 1 1 auto; /* Los botones crecen para llenar la fila de forma ordenada */
+        width: auto; /* Dejar que flex controle el ancho */
+        text-align: center;
+        justify-content: center;
+    }
+    
+    /* El botón de borrar (papelera) no debería crecer tanto */
+    .wod-toolbar form {
+        flex: 0 0 auto;
+    }
+}
