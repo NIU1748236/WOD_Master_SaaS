@@ -7,7 +7,7 @@
     
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=17"> 
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7B9WGH73HH"></script>
     <script>
@@ -18,7 +18,7 @@
     </script>
 
     <style>
-        /* Estilos específicos para la Landing */
+        /* Estilos específicos para la Landing (Desktop) */
         .hero {
             text-align: center;
             padding: 80px 20px;
@@ -55,6 +55,47 @@
             background: #222; border-top: 1px solid #444;
             padding: 20px; text-align: center; z-index: 9999;
             display: none; 
+        }
+        
+        /* === RESPONSIVE FIXES FOR MOBILE (Override previous styles) === */
+        @media (max-width: 768px) {
+            .landing-container {
+                padding: 0 10px; /* Reducir padding horizontal */
+            }
+            .navbar {
+                flex-direction: column; /* Apilar barra de navegación */
+                align-items: flex-start;
+                padding: 15px 0;
+                gap: 10px;
+            }
+            .navbar > div:last-child { /* El contenedor de Login/Register/Toggle */
+                flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
+            }
+             .navbar a {
+                margin-right: 10px !important; /* Ajuste para el margen entre los enlaces */
+                padding: 8px 15px !important;
+            }
+            .hero {
+                padding: 40px 10px; /* Reducir padding vertical */
+            }
+            .hero h1 { 
+                font-size: 2.5em; /* Tamaño de cabecera más pequeño */
+            }
+            .hero p {
+                 font-size: 1em; /* Párrafo más pequeño */
+            }
+            .cta-button {
+                width: 100%; /* El CTA ocupa todo el ancho */
+                padding: 15px 20px;
+                box-sizing: border-box;
+            }
+            .features-grid {
+                grid-template-columns: 1fr; /* Poner en una sola columna */
+                padding: 30px 10px;
+                gap: 20px;
+            }
         }
     </style>
 </head>
