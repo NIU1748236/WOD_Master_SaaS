@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Privacidad - WOD Master PRO</title>
+    
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=13">
+</head>
+<body>
+    <div class="container" style="max-width: 800px; margin-top: 40px;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <a href="{{ url_for('root') }}" class="button secondary">← Volver</a>
+            <button id="theme-toggle" class="theme-toggle">🌞</button>
+        </div>
+        
+        <h1>Política de Privacidad</h1>
+        <p style="color: var(--text-muted);">Última actualización: <strong>{{ now.strftime('%d/%m/%Y') if now else 'Hoy' }}</strong></p>
+
+        <div style="line-height: 1.6; color: var(--text-main);">
+            <h3>1. Responsable del Tratamiento</h3>
+            <p>El responsable de los datos recogidos en WOD Master PRO es:</p>
+            <ul>
+                <li><strong>Nombre / Razón Social:</strong> Pau García Ruiz</li>
+                <li><strong>Email de contacto:</strong> wodmasterapp@gmail.com</li>
+                <li><strong>Dirección:</strong> Barcelona, España</li>
+            </ul>
+
+            <h3>2. Datos que Recopilamos</h3>
+            <p>Para prestar el servicio, recopilamos la siguiente información:</p>
+            <ul>
+                <li><strong>Datos de Cuenta:</strong> Email, contraseña (encriptada) y nombre del gimnasio.</li>
+                <li><strong>Datos de Uso:</strong> Entrenamientos (WODs) creados, estadísticas de uso de la IA y preferencias de configuración.</li>
+                <li><strong>Datos de Pago:</strong> Historial de facturación e ID de cliente de Stripe. <strong>No almacenamos números de tarjeta de crédito</strong>; estos son procesados directamente por nuestro proveedor de pagos (Stripe).</li>
+                <li><strong>Datos Técnicos:</strong> Dirección IP, tipo de navegador y cookies (ver política de cookies).</li>
+            </ul>
+
+            <h3>3. Finalidad del Tratamiento</h3>
+            <p>Usamos tus datos para:</p>
+            <ul>
+                <li>Proporcionar el acceso a la plataforma y gestionar tu cuenta.</li>
+                <li>Procesar los pagos de la suscripción mensual.</li>
+                <li>Generar contenido automatizado mediante Inteligencia Artificial.</li>
+                <li>Enviar notificaciones importantes (bienvenida, recuperación de contraseña, cambios en el servicio).</li>
+                <li>Mejorar la seguridad y prevenir fraudes.</li>
+            </ul>
+
+            <h3>4. Compartición de Datos con Terceros</h3>
+            <p>Para funcionar, WOD Master PRO comparte estrictamente los datos necesarios con los siguientes proveedores de servicios:</p>
+            <ul>
+                <li><strong>Stripe (Pagos):</strong> Procesamiento de tarjetas y gestión de suscripciones.</li>
+                <li><strong>Google Gemini (IA):</strong> El texto de los entrenamientos que introduces se envía a la API de Google Gemini para generar el contenido de marketing.</li>
+                <li><strong>Google Analytics (Analítica):</strong> Recopilación anónima de estadísticas de visita.</li>
+                <li><strong>Render (Hosting):</strong> Alojamiento de la base de datos y la aplicación.</li>
+            </ul>
+
+            <h3>5. Tus Derechos</h3>
+            <p>De acuerdo con el GDPR, tienes derecho a acceder, rectificar y suprimir tus datos. Puedes <strong>eliminar tu cuenta permanentemente</strong> y borrar todos tus datos en cualquier momento desde el panel de control de la aplicación (botón "Eliminar mi Cuenta" en la zona de peligro).</p>
+
+            <h3>6. Cookies</h3>
+            <p>Utilizamos cookies técnicas (necesarias para el login) y cookies analíticas (Google Analytics). Puedes aceptar o rechazar las cookies no esenciales a través del banner de nuestra página de inicio.</p>
+        </div>
+        <br><br>
+    </div>
+
+    <script>
+        const btnTheme = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Aplica el tema guardado al cargar
+        if (localStorage.getItem('theme') === 'light') { 
+            body.classList.add('light-mode'); 
+            if(btnTheme) btnTheme.innerText = '🌙'; 
+        } else { 
+            if(btnTheme) btnTheme.innerText = '🌞'; 
+        }
+
+        function toggleTheme() {
+            body.classList.toggle('light-mode');
+            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+            btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞';
+        }
+        if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
+    </script>
+</body>
+</html>

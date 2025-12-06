@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Contacto y Soporte</title>
+    
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container" style="max-width: 600px; margin-top: 50px;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+            <h1>📞 Contacto y Soporte</h1>
+            <button id="theme-toggle" class="theme-toggle">🌞</button>
+        </div>
+        
+        <p style="color: var(--text-muted);">
+            Si tienes alguna duda sobre tu suscripción, facturación o necesitas ayuda con la IA, puedes contactarnos.
+        </p>
+        
+        <div style="margin-top: 30px; padding: 20px; border: 1px solid var(--border-color); border-radius: 8px;">
+            <h3>📧 Email de Soporte (Preferido)</h3>
+            <p style="font-size: 1.1em; font-weight: bold; color: var(--primary-color);">
+                wodmasterapp@gmail.com
+            </p>
+            <p style="font-size: 0.9em; color: var(--text-muted);">
+                Respondemos en menos de 24 horas.
+            </p>
+        </div>
+        
+        <p style="text-align: center; margin-top: 40px;">
+            <a href="{{ url_for('root') }}" class="button secondary">← Volver a la Aplicación</a>
+        </p>
+    </div>
+    
+    <script>
+        const btnTheme = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Aplica el tema guardado al cargar
+        if (localStorage.getItem('theme') === 'light') { 
+            body.classList.add('light-mode'); 
+            if(btnTheme) btnTheme.innerText = '🌙'; 
+        } else { 
+            if(btnTheme) btnTheme.innerText = '🌞'; 
+        }
+
+        function toggleTheme() {
+            body.classList.toggle('light-mode');
+            localStorage.setItem('theme', body.classList.contains('light-mode') ? 'light' : 'dark');
+            btnTheme.innerText = body.classList.contains('light-mode') ? '🌙' : '🌞';
+        }
+        if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
+    </script>
+</body>
+</html>

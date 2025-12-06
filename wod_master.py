@@ -16,6 +16,7 @@ import stripe
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from fpdf import FPDF 
+from sqlalchemy import extract
 
 # ==========================================
 # 1. CONFIGURACIÓN
@@ -33,7 +34,7 @@ STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
 STRIPE_PRICE_ID = os.getenv('STRIPE_PRICE_ID')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET') 
 
-# EMAIL ADMIN
+# ADMIN EMAIL
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'pau.garcia.ru@gmail.com')
 
 # MAIL
@@ -153,6 +154,28 @@ def generar_contenido_ai(wod):
         print(f"Error IA: {e}")
         return False
 
+# --- TAREA ASÍNCRONA IA ---
+def async_ai_generation(app, wod_id, user_id):
+    """Ejecuta la generación de IA en segundo plano con contexto de aplicación"""
+    with app.app_context():
+        wod = Wod.query.get(wod_id)
+        user = User.query.get(user_id)
+        
+        if wod and user:
+            print(f"🚀 Iniciando generación IA para WOD {wod_id}...")
+            if generar_contenido_ai(wod):
+                if not user.is_premium:
+                    user.credits = max(0, user.credits - 1)
+                
+                if user.ai_uses_count is None: 
+                    user.ai_uses_count = 0
+                user.ai_uses_count += 1
+                
+                db.session.commit()
+                print(f"✅ Generación IA completada para WOD {wod_id}")
+            else:
+                print(f"❌ Fallo en generación IA para WOD {wod_id}")
+
 # ==========================================
 # 4. RUTAS PRINCIPALES
 # ==========================================
@@ -170,9 +193,55 @@ def landing():
 @app.route('/index')
 @login_required
 def index():
-    wods = Wod.query.filter_by(user_id=current_user.id).order_by(Wod.date.desc()).all()
+    # --- LÓGICA DE FILTROS ---
+    category_filter = request.args.get('category')
+    month_filter = request.args.get('month') # Formato esperado YYYY-MM
+    
+    query = Wod.query.filter_by(user_id=current_user.id)
+    
+    # Aplicar Filtro Categoría
+    if category_filter and category_filter != 'Todas':
+        query = query.filter_by(category=category_filter)
+        
+    # Aplicar Filtro Mes
+    if month_filter:
+        try:
+            year, month = map(int, month_filter.split('-'))
+            query = query.filter(extract('year', Wod.date) == year,
+                                 extract('month', Wod.date) == month)
+        except ValueError:
+            pass 
+
+    # Ordenar y ejecutar
+    wods = query.order_by(Wod.date.desc()).all()
+    
+    # --- LOGICA DESPLEGABLE DE MESES INTELIGENTE ---
+    meses_es = {
+        1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril", 5: "Mayo", 6: "Junio",
+        7: "Julio", 8: "Agosto", 9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+    }
+
+    available_months_query = db.session.query(
+        extract('year', Wod.date).label('year'),
+        extract('month', Wod.date).label('month')
+    ).filter_by(user_id=current_user.id)\
+     .group_by(extract('year', Wod.date), extract('month', Wod.date))\
+     .order_by(extract('year', Wod.date).desc(), extract('month', Wod.date).desc())\
+     .all()
+
+    month_choices = []
+    for m in available_months_query:
+        y = int(m.year)
+        mo = int(m.month)
+        value = f"{y}-{mo:02d}"
+        label = f"{meses_es[mo]} {y}"
+        month_choices.append((value, label))
+
     is_super_admin = (current_user.email == ADMIN_EMAIL)
-    return render_template('index.html', wods=wods, user=current_user, is_super_admin=is_super_admin)
+    
+    return render_template('index.html', wods=wods, user=current_user, is_super_admin=is_super_admin,
+                           current_category=category_filter, current_month=month_filter,
+                           month_choices=month_choices)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -256,7 +325,6 @@ def contact(): return render_template('contact.html')
 @app.route('/add_wod', methods=['GET', 'POST'])
 @login_required
 def add_wod():
-    # Lógica de clonación (pre-llenado)
     cloned_wod = None
     if request.method == 'GET' and 'clone_from' in request.args:
         source_id = request.args.get('clone_from')
@@ -282,7 +350,6 @@ def add_wod():
         except Exception as e:
             flash(f'Error: {e}', 'error')
 
-    # Por defecto fecha de hoy, incluso si clonamos (normalmente clonas para hoy)
     default_date = datetime.now().strftime('%Y-%m-%d')
     return render_template('add_wod.html', wod=cloned_wod, today_date=default_date)
 
@@ -316,16 +383,15 @@ def delete_wod(wod_id):
 @login_required
 def generate_ai_content(wod_id):
     wod = Wod.query.filter_by(id=wod_id, user_id=current_user.id).first_or_404()
+    
     if not current_user.is_premium and current_user.credits <= 0:
         flash('Sin créditos. Pásate a PRO.', 'error')
         return redirect(url_for('index'))
-    if generar_contenido_ai(wod):
-        if not current_user.is_premium: current_user.credits -= 1
-        if current_user.ai_uses_count is None: current_user.ai_uses_count = 0
-        current_user.ai_uses_count += 1
-        db.session.commit()
-        flash('Contenido generado.', 'success')
-    else: flash('Error IA.', 'error')
+    
+    Thread(target=async_ai_generation, args=(app, wod.id, current_user.id)).start()
+    
+    # CAMBIO: CATEGORÍA SUCCESS (VERDE)
+    flash('Contenido Generado.', 'success')
     return redirect(url_for('index'))
 
 @app.route('/export_pdf/<int:wod_id>')
