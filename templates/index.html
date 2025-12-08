@@ -206,24 +206,75 @@
         }
         
         function confirmarGeneracion(form, len, isPremium) {
-            // Confirmación básica
-            if (parseInt(len) > 5) { 
-                if (isPremium) { 
-                    if (!confirm("¿Regenerar?")) return false; 
-                } else { 
-                    if (!confirm("¿Regenerar? Gastarás 1 crédito.")) return false; 
-                } 
-            }
-            
-            // Lógica original: Ocultar botón y mostrar spinner "Creando magia..."
-            const btn = form.querySelector('.ai-button');
-            const spinner = form.querySelector('.loading-spinner');
-            
-            if (btn) btn.style.display = 'none';
-            if (spinner) spinner.style.display = 'block';
-
-            return true; // Envía el formulario normalmente
+        // 1. Confirmación para no gastar créditos por error
+        if (parseInt(len) > 5) { 
+            const msg = isPremium ? "¿Quieres regenerar el contenido existente?" : "¿Regenerar? Gastarás 1 crédito adicional.";
+            if (!confirm(msg)) return false; 
         }
+        
+        // 2. UI: Ocultar botón y mostrar spinner "Creando magia..."
+        const btn = form.querySelector('.ai-button');
+        const spinner = form.querySelector('.loading-spinner');
+        
+        if (btn) btn.style.display = 'none';
+        if (spinner) spinner.style.display = 'block';
+
+        // 3. OBTENER ID DEL WOD DE LA URL DEL FORMULARIO
+        // La acción es algo como "/generate_ai_content/15"
+        const actionUrl = form.getAttribute('action');
+        const wodId = actionUrl.split('/').pop(); // Saca el número final (ID)
+
+        // 4. PETICIÓN AJAX (Sin recargar página todavía)
+        fetch(actionUrl + '?ajax=1', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                location.reload(); // Recargar para mostrar error o resetear
+            } else {
+                // Si todo va bien, empezamos a vigilar (Polling)
+                iniciarSondeo(wodId, btn, spinner);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Hubo un error de conexión.');
+            location.reload();
+        });
+
+        return false; // IMPORTANTE: Evita que el formulario haga submit normal
+    }
+
+        function iniciarSondeo(wodId, btn, spinner) {
+        let intentos = 0;
+        const maxIntentos = 20; // 20 segundos máximo de espera
+        
+        const intervalo = setInterval(() => {
+            intentos++;
+            
+            // Preguntamos al servidor: "¿Ya está?"
+            fetch('/check_ai_status/' + wodId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.ready) {
+                        // ¡LISTO! Paramos el reloj y recargamos
+                        clearInterval(intervalo);
+                        window.location.reload(); 
+                    } else {
+                        // Si tarda demasiado (TIMEOUT)
+                        if (intentos >= maxIntentos) {
+                            clearInterval(intervalo);
+                            alert("La IA está tardando más de lo previsto. Recarga la página manualmente.");
+                            location.reload();
+                        }
+                    }
+                })
+                .catch(err => console.error("Error polling:", err));
+                
+        }, 1000); // Comprobar cada 1 segundo (1000ms)
+    }
 
         function copiarTexto(id, btn) {
             var t = document.getElementById(id); 

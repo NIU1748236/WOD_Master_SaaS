@@ -381,19 +381,47 @@ def delete_wod(wod_id):
     db.session.commit()
     return redirect(url_for('index'))
 
+@app.route('/check_ai_status/<int:wod_id>')
+@login_required
+def check_ai_status(wod_id):
+    """Ruta ligera para consultar si la IA ha terminado"""
+    wod = Wod.query.filter_by(id=wod_id, user_id=current_user.id).first_or_404()
+    # Consideramos que está listo si hay estrategia generada
+    is_ready = (wod.ai_strategy is not None) and (wod.ai_strategy != '')
+    return jsonify({'ready': is_ready})
+
 @app.route('/generate_ai_content/<int:wod_id>', methods=['POST'])
 @login_required
 def generate_ai_content(wod_id):
     wod = Wod.query.filter_by(id=wod_id, user_id=current_user.id).first_or_404()
     
+    # 1. Verificación de créditos
     if not current_user.is_premium and current_user.credits <= 0:
+        if request.args.get('ajax'): # Si viene por JS devuelve JSON
+            return jsonify({'error': 'Sin créditos. Pásate a PRO.'}), 403
         flash('Sin créditos. Pásate a PRO.', 'error')
         return redirect(url_for('index'))
     
+    # 2. LIMPIEZA PREVIA (Importante para que el polling no lea datos viejos)
+    wod.ai_strategy = None
+    wod.ai_warmup = None
+    wod.ai_instagram_post = None
+    wod.ai_newsletter_text = None
+    wod.ai_reel_script = None
+    db.session.commit()
+
+    # 3. LANZAR HILO (Segundo plano)
     Thread(target=async_ai_generation, args=(app, wod.id, current_user.id)).start()
     
-    # CAMBIO: CATEGORÍA SUCCESS (VERDE)
-    flash('Contenido Generado.', 'success')
+    # 4. RESPUESTA
+    # Si la petición es AJAX (desde el botón nuevo), devolvemos JSON y NO redirigimos aún
+    if request.args.get('ajax'):
+        # Guardamos el mensaje flash en la sesión para que salga al recargar
+        flash('✨ ¡Contenido generado con éxito!', 'success')
+        return jsonify({'status': 'started'})
+    
+    # Fallback para peticiones normales (antiguo comportamiento)
+    flash('Generando contenido... espera unos segundos y recarga.', 'info')
     return redirect(url_for('index'))
 
 @app.route('/export_pdf/<int:wod_id>')
