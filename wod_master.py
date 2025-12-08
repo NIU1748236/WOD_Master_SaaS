@@ -517,7 +517,8 @@ def create_checkout_session():
         mode='subscription',
         success_url=url_for('success', _external=True),
         cancel_url=url_for('pricing', _external=True),
-        client_reference_id=str(current_user.id)
+        client_reference_id=str(current_user.id),
+        allow_promotion_codes=True  # <--- ¡AÑADE ESTO!
     )
     return redirect(session.url, code=303)
 
@@ -590,4 +591,4 @@ def internal_server_error(e): return render_template('500.html'), 500
 
 if __name__ == '__main__':
     with app.app_context(): db.create_all()
-    app.run(debug=True)
+    app.run(debug=False)

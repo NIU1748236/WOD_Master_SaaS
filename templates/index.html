@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOD Master PRO</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=20">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=21">
     
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     
@@ -17,9 +17,21 @@
       gtag('config', 'G-7B9WGH73HH');
     </script>
 
-    <style> .btn-loading { opacity: 0.7; cursor: not-allowed !important; } </style>
+    <style> 
+        .btn-loading { opacity: 0.7; cursor: not-allowed !important; } 
+        /* Animación suave para el banner */
+        .promo-banner { animation: slideDown 0.5s ease-out; }
+        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+    </style>
 </head>
 <body>
+    {% if not user.is_premium %}
+    <div class="promo-banner" style="background: linear-gradient(90deg, #2c3e50, #000000); color: white; text-align: center; padding: 12px; font-size: 0.95em; border-bottom: 1px solid #444; position: relative; z-index: 1000;">
+        🚀 <b>OFERTA DE LANZAMIENTO:</b> Consigue un <b>50% DE DESCUENTO DE POR VIDA</b> usando el código <code style="background: #00e676; color: black; padding: 2px 6px; border-radius: 4px; font-weight: bold;">EARLYBIRD</code> al pagar. 
+        <a href="{{ url_for('pricing') }}" style="color: #00e676; margin-left: 10px; text-decoration: underline; font-weight: bold;">Canjear ahora ➜</a>
+    </div>
+    {% endif %}
+
     <div class="container">
         <div class="main-header">
             <div>
@@ -68,7 +80,7 @@
         <a href="{{ url_for('add_wod') }}" class="button primary btn-full-width">➕ CREAR NUEVO WOD</a>
         
         {% if not user.is_premium %}
-        <a href="{{ url_for('pricing') }}" class="button btn-full-width" style="background: #ffc107; color: black; font-weight: bold; border: 2px solid #ffc107;">⚡️ PASAR A PRO</a>
+        <a href="{{ url_for('pricing') }}" class="button btn-full-width" style="background: #ffc107; color: black; font-weight: bold; border: 2px solid #ffc107;">⚡️ PASAR A PRO (50% DTO)</a>
         {% endif %}
 
         {% if not user.is_premium and user.credits <= 0 %}
@@ -153,7 +165,7 @@
                 {% else %}
                     <a href="{{ url_for('pricing') }}" class="button ai-button" style="background: #555; cursor: not-allowed; text-align: center; display: block;">🔒 NECESITAS PLAN PRO</a>
                 {% endif %}
-                <div class="loading-spinner"><div class="spinner"></div> Creando magia...</div>
+                <div class="loading-spinner"><div class="spinner"></div> Creando magia... (Esto tarda unos segundos)</div>
             </form>
 
             {% if wod.ai_instagram_post or wod.ai_warmup or wod.ai_strategy %}
@@ -170,7 +182,25 @@
                     <div class="result-group"><div class="result-header"><label>🎬 Reel:</label><button class="copy-btn" onclick="copiarTexto('reel-{{wod.id}}', this)">📋 Copiar</button></div><textarea readonly id="reel-{{wod.id}}" style="height: 250px;">{{ wod.ai_reel_script }}</textarea></div>
                 </div>
                 {% else %}
-                <div style="background: var(--bg-body); border: 2px dashed #9c27b0; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;"><h4 style="color: #9c27b0; margin-top: 0;">🔒 Exclusivo Plan PRO</h4><p>Guion de Reel y Newsletter.</p><a href="{{ url_for('pricing') }}" class="button download-btn" style="text-decoration: none;">¡MEJORAR A PRO!</a></div>
+                <div style="position: relative; overflow: hidden; background: var(--bg-body); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <div style="filter: blur(4px); opacity: 0.6; user-select: none; pointer-events: none;">
+                        <h4 style="color: #9c27b0; margin-top: 0;">📧 Newsletter Semanal</h4>
+                        <p><strong>Asunto:</strong> ¡Prepárate para superar tus límites esta semana!</p>
+                        <p>Hola equipo,</p>
+                        <p>Esta semana nos enfocamos en mejorar la fuerza base con un ciclo de Wendler 5/3/1 adaptado...</p>
+                        <br>
+                        <h4 style="color: #9c27b0;">🎬 Guion de Reel</h4>
+                        <p><strong>Gancho Visual:</strong> Primer plano de manos con magnesio.</p>
+                        <p><strong>Audio:</strong> Música épica in crescendo.</p>
+                        <p><strong>Texto:</strong> "¿Crees que hoy no puedes más? Mira esto..."</p>
+                    </div>
+                    
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); z-index: 10;">
+                        <h3 style="color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); margin-bottom: 5px;">🔒 Contenido Premium Bloqueado</h3>
+                        <p style="color: #eee; text-shadow: 0 1px 2px rgba(0,0,0,0.8); margin-bottom: 20px; font-weight: bold;">Desbloquea Newsletters y Guiones Virales ilimitados.</p>
+                        <a href="{{ url_for('pricing') }}" class="button primary" style="text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 2px solid white;">🔓 DESBLOQUEAR AHORA</a>
+                    </div>
+                </div>
                 {% endif %}
             </div>
             {% endif %}
@@ -184,7 +214,7 @@
             <a href="{{ url_for('terms') }}" style="color: var(--text-muted);">Términos</a> | 
             <a href="{{ url_for('contact') }}" style="color: var(--text-muted);">Contacto</a>
             <br><br>
-            © 2024 WOD Master SaaS.
+            © 2025 WOD Master SaaS.
         </div>
     </div>
 
@@ -205,76 +235,82 @@
             });
         }
         
+        // --- 3. LÓGICA DE GENERACIÓN IA MEJORADA (POLLING) ---
         function confirmarGeneracion(form, len, isPremium) {
-        // 1. Confirmación para no gastar créditos por error
-        if (parseInt(len) > 5) { 
-            const msg = isPremium ? "¿Quieres regenerar el contenido existente?" : "¿Regenerar? Gastarás 1 crédito adicional.";
-            if (!confirm(msg)) return false; 
-        }
-        
-        // 2. UI: Ocultar botón y mostrar spinner "Creando magia..."
-        const btn = form.querySelector('.ai-button');
-        const spinner = form.querySelector('.loading-spinner');
-        
-        if (btn) btn.style.display = 'none';
-        if (spinner) spinner.style.display = 'block';
-
-        // 3. OBTENER ID DEL WOD DE LA URL DEL FORMULARIO
-        // La acción es algo como "/generate_ai_content/15"
-        const actionUrl = form.getAttribute('action');
-        const wodId = actionUrl.split('/').pop(); // Saca el número final (ID)
-
-        // 4. PETICIÓN AJAX (Sin recargar página todavía)
-        fetch(actionUrl + '?ajax=1', {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-                location.reload(); // Recargar para mostrar error o resetear
-            } else {
-                // Si todo va bien, empezamos a vigilar (Polling)
-                iniciarSondeo(wodId, btn, spinner);
+            // Confirmación de regeneración si ya existe contenido
+            if (parseInt(len) > 5) { 
+                const msg = isPremium ? "¿Regenerar contenido existente?" : "¿Regenerar? Gastarás 1 crédito adicional.";
+                if (!confirm(msg)) return false; 
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Hubo un error de conexión.');
-            location.reload();
-        });
+            
+            // UI: Ocultar botón, mostrar spinner
+            const btn = form.querySelector('.ai-button');
+            const spinner = form.querySelector('.loading-spinner');
+            
+            if (btn) btn.style.display = 'none';
+            if (spinner) spinner.style.display = 'block';
 
-        return false; // IMPORTANTE: Evita que el formulario haga submit normal
-    }
+            // Obtener ID del WOD de la URL del formulario (ej: /generate_ai_content/123)
+            const actionUrl = form.getAttribute('action');
+            const wodId = actionUrl.split('/').pop(); 
+
+            // Petición AJAX inicial
+            fetch(actionUrl + '?ajax=1', {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Error en la petición');
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    location.reload();
+                } else {
+                    // Si todo va bien, iniciamos el sondeo
+                    iniciarSondeo(wodId, btn, spinner);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un error al iniciar la generación. Verifica tu conexión.');
+                location.reload();
+            });
+
+            return false; // Evita el submit tradicional
+        }
 
         function iniciarSondeo(wodId, btn, spinner) {
-        let intentos = 0;
-        const maxIntentos = 20; // 20 segundos máximo de espera
-        
-        const intervalo = setInterval(() => {
-            intentos++;
+            let intentos = 0;
+            const maxIntentos = 30; // 30 segundos máximo
             
-            // Preguntamos al servidor: "¿Ya está?"
-            fetch('/check_ai_status/' + wodId)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.ready) {
-                        // ¡LISTO! Paramos el reloj y recargamos
-                        clearInterval(intervalo);
-                        window.location.reload(); 
-                    } else {
-                        // Si tarda demasiado (TIMEOUT)
-                        if (intentos >= maxIntentos) {
-                            clearInterval(intervalo);
-                            alert("La IA está tardando más de lo previsto. Recarga la página manualmente.");
-                            location.reload();
-                        }
-                    }
-                })
-                .catch(err => console.error("Error polling:", err));
+            // Intervalo que comprueba cada 1 segundo
+            const intervalo = setInterval(() => {
+                intentos++;
                 
-        }, 1000); // Comprobar cada 1 segundo (1000ms)
-    }
+                fetch('/check_ai_status/' + wodId)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.ready) {
+                            // ¡CONTENIDO LISTO!
+                            clearInterval(intervalo);
+                            window.location.reload(); 
+                        } else {
+                            // Si superamos el tiempo límite
+                            if (intentos >= maxIntentos) {
+                                clearInterval(intervalo);
+                                alert("La IA está tardando más de lo normal. Por favor, recarga la página manualmente.");
+                                location.reload();
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error polling:", err);
+                        // No paramos el intervalo por un error puntual de red, seguimos intentando
+                    });
+                    
+            }, 1000); // 1000ms = 1 segundo
+        }
 
         function copiarTexto(id, btn) {
             var t = document.getElementById(id); 
@@ -291,36 +327,30 @@
             }, 1500); 
         }
 
-        // --- LÓGICA STORY PRO CORREGIDA ---
+        // --- LÓGICA STORY PRO ---
         function descargarImagen(btn, id, t) {
-            // Verificamos si la librería cargó
             if (typeof html2canvas === 'undefined') {
-                alert('Error crítico: La librería de generación de imágenes no se ha cargado. Revisa tu conexión.');
+                alert('Error crítico: La librería de generación de imágenes no se ha cargado.');
                 return;
             }
 
             const designSelector = document.getElementById('story-design-'+id);
             const selectedDesign = designSelector ? designSelector.value : 'dark';
-
             const captureDiv = document.getElementById('story-capture-'+id);
             const originalBtnText = btn.innerHTML;
             
-            // 1. Aplicar diseño
             captureDiv.className = 'story-text-container design-' + selectedDesign;
             
-            // 2. Feedback visual en el botón
             btn.innerHTML = '⚙️ Generando...';
             btn.classList.add('btn-loading');
             btn.disabled = true;
 
-            // 3. Preparar el div invisible
             captureDiv.style.display = 'flex';
             captureDiv.style.position = 'fixed';
             captureDiv.style.top = '0';
-            captureDiv.style.left = '-9999px'; // Fuera de pantalla
+            captureDiv.style.left = '-9999px';
             captureDiv.style.zIndex = '9999';
 
-            // 4. Pequeña espera para asegurar que el navegador renderice los estilos
             setTimeout(() => {
                 try {
                     html2canvas(captureDiv, { 
@@ -333,22 +363,18 @@
                     }).then(canvas => {
                         let l = document.createElement('a'); 
                         let safeTitle = t.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                        
                         l.download = 'WOD-Story-' + selectedDesign + '-' + safeTitle + '.png'; 
                         l.href = canvas.toDataURL('image/png'); 
-                        
                         document.body.appendChild(l); 
                         l.click();
                         document.body.removeChild(l);
 
-                        // Restaurar
                         captureDiv.style.display = 'none';
                         captureDiv.className = 'story-text-container'; 
                         
                         btn.innerHTML = originalBtnText;
                         btn.classList.remove('btn-loading');
                         btn.disabled = false;
-
                     }).catch(err => { 
                          console.error("Error en Story Pro:", err);
                          alert("Error al generar la imagen. Inténtalo de nuevo.");
@@ -359,7 +385,7 @@
                     });
                 } catch (e) {
                     console.error(e);
-                    alert("Error inesperado. Recarga la página.");
+                    alert("Error inesperado.");
                     btn.innerHTML = originalBtnText;
                     btn.disabled = false;
                 }

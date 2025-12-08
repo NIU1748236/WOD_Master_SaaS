@@ -26,6 +26,32 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 0;
         }
+
+        /* Estilos para Testimonios */
+        .testimonials {
+            margin-top: 60px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 40px;
+        }
+        .testimonial-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+            display: inline-block;
+            max-width: 300px;
+            margin: 10px;
+            font-style: italic;
+            vertical-align: top;
+        }
+        .testimonial-author {
+            margin-top: 10px;
+            font-weight: bold;
+            font-style: normal;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
@@ -101,9 +127,26 @@
                         👉 SUSCRIBIRSE AHORA
                     </button>
                 </form>
-                <p style="font-size: 0.8em; margin-top: 10px; color: var(--text-muted);">Cancela en cualquier momento. Sin permanencia.</p>
+                <p style="font-size: 0.8em; margin-top: 10px; color: var(--text-muted);">
+                    ¿Tienes cupón? Podrás añadirlo en el siguiente paso.
+                </p>
             </div>
         </div>
+        
+        <div class="testimonials">
+            <h3 style="margin-bottom: 30px;">💪 Lo que dicen los Head Coaches</h3>
+            
+            <div class="testimonial-card">
+                "Me ahorra literalmente 4 horas cada domingo. Antes me quedaba en blanco con la newsletter, ahora sale sola."
+                <div class="testimonial-author">Marc, Head Coach en Barcelona</div>
+            </div>
+            
+            <div class="testimonial-card">
+                "Mis atletas están encantados con las estrategias detalladas. Se nota mucho el salto de calidad en el servicio."
+                <div class="testimonial-author">Laura S., Dueña de Box en Madrid</div>
+            </div>
+        </div>
+
         <br>
         <div style="text-align: center; margin-top: 30px; font-size: 0.8em; color: var(--text-muted);">
             <a href="{{ url_for('privacy') }}" style="color: var(--text-muted);">Política de Privacidad</a> | 
