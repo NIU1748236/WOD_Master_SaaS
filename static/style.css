@@ -331,8 +331,14 @@ input:focus, select:focus { border-color: var(--accent-blue); outline: none; }
     color: #000000;
     background: #ffea00; 
     display: inline-block;
-    padding: 5px 15px;
+    padding: 10px 20px;
     transform: rotate(-2deg);
+    /* CORRECCIÓN TÍTULOS LARGOS */
+    max-width: 85%;         /* Evita que se salga del ancho del contenedor */
+    word-wrap: break-word;  /* Fuerza el salto de línea si la palabra es muy larga */
+    white-space: normal;    /* Permite múltiples líneas */
+    line-height: 1.2;       /* Mejor espaciado entre líneas si salta */
+    font-size: 3rem;        /* Un poco más pequeño para asegurar que quepan títulos largos */
 }
 .design-light .wod-structure {
     background: #f4f4f4;

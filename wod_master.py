@@ -125,6 +125,8 @@ def generar_contenido_ai(wod):
     Tono: {wod.tone}. 
     Público: {wod.target_audience}.
 
+    IMPORTANTE: No uses formato Markdown (como **negritas** o ## títulos). Usa solo texto plano limpio.
+    
     Genera un JSON válido con estas claves exactas (sin texto antes ni después, solo el JSON):
     {{
         "strategy": "Estrategia detallada y opciones de escalado.",
@@ -424,6 +426,11 @@ def export_pdf(wod_id):
         def chapter_body(self, body):
             self.set_font('Arial', '', 11)
             self.set_text_color(0)
+            # --- CORRECCIÓN: Limpiar asteriscos de Markdown ---
+            # Si el texto es None, usamos string vacío
+            text_content = body if body else ""
+            clean_body = text_content.replace('**', '').replace('##', '').replace('__', '')
+            # --------------------------------------------------
             safe_body = body.encode('latin-1', 'replace').decode('latin-1')
             self.multi_cell(0, 6, safe_body)
             self.ln(5)
